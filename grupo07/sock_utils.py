@@ -19,14 +19,12 @@ def create_tcp_server_socket(address, port, queue_size):
 
     return sock
 
-def create_tcp_client_socket(address, port):
+def create_tcp_client_socket():
     sock = s.socket(s.AF_INET, s.SOCK_STREAM)
-    sock.connect((address, port))
-
     return sock
 
 def receive_all(socket, length):
-    # TODO: FIX THIS
+    # TODO: FIX THIS ON FRIDAY
     
     try:
         socket.settimeout(30)
@@ -34,8 +32,8 @@ def receive_all(socket, length):
 
         return received_data
         
-    except s.timeout as e:
-        print("A conexão foi interrompida.")
+    except s.timeout:
+        print("CONNECTION TIMED OUT")
 
     
     

@@ -7,7 +7,7 @@ Números de aluno: 55373, 55371
 
 # zona para fazer importação
 
-from sock_utils import create_tcp_client_socket
+from sock_utils import client_socket, receive_all
 
 # definição da classe server
 
@@ -20,23 +20,28 @@ class server:
         """
         Inicializa a classe com parâmetros para funcionamento futuro.
         """
-        pass # Remover esta linha e fazer implementação da função
+        self._address = address
+        self._port = port
+
+        self._sock = client_socket()
         
     def connect(self):
         """
         Estabelece a ligação ao servidor especificado na inicialização.
         """
-        pass # Remover esta linha e fazer implementação da função
+        self._sock.connect((self._address, self._port))
 
     def send_receive(self, data):
         """
         Envia os dados contidos em data para a socket da ligação, e retorna
         a resposta recebida pela mesma socket.
         """
-        pass # Remover esta linha e fazer implementação da função
+        self._sock.sendall(data)
+        
+        return receive_all(self._sock, 1024)
     
     def close(self):
         """
         Termina a ligação ao servidor.
         """
-        pass # Remover esta linha e fazer implementação da função
+        self._sock.close()
