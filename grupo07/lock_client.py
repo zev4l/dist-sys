@@ -8,15 +8,16 @@ Números de aluno: 55373, 55371
 
 # TODO: DOCUMENT EVERYTHING
 
-# Zona para fazer imports
+### Imports
 
 import sys
 import re
 from time import sleep
 import net_client as nc
 
-# Variáveis Globais
+### Variáveis Globais
 
+# Mensagens de Erro
 
 serverCommands = ("LOCK", "UNLOCK", "STATUS", "STATS", "PRINT")
 PARAMETER_ERROR = "Verifique os parâmetros.\nUtilização: lock_client.py <ID> <IP/Hostname> <Porto>"
@@ -24,8 +25,11 @@ UNKNOWN_COMMAND_ERROR = "UNKNOWN COMMAND"
 MISSING_ARGUMENTS_ERROR = "MISSING ARGUMENTS"
 EXCESSIVE_ARGUMENTS_ERROR = "TOO MANY ARGUMENTS"
 INVALID_ARGUMENTS_ERROR = "INVALID ARGUMENTS"
+GENERAL_CONNECTION_ERROR = "CONNECTION ERROR"
+CONNECTION_REFUSED_ERROR = "CONNECTION REFUSED"
 
-# Funções Adicionais
+
+### Funções Adicionais
 
 def argumentChecker(userInput):
 
@@ -99,6 +103,12 @@ def argumentChecker(userInput):
             print(INVALID_ARGUMENTS_ERROR)
             return False
 
+    #TODO: fix later
+
+    if command == "PRINT":
+
+        return True
+
             
 
 
@@ -136,10 +146,10 @@ except Exception as e:
 while True:
 
     ####TODO: Fix this variable, it only exists until server is working
-    sendToServer = ""
+    request = ""
     ####
 
-    userInput = input("Comando > ").upper().split()
+    userInput = input("Command > ").upper().split()
     command = userInput[0]
     arguments = userInput[1:]
 
@@ -158,55 +168,50 @@ while True:
 
     if command in serverCommands:
 
+
         if argumentChecker(userInput):
         
             if command == "LOCK":
                 
-                    sendToServer = f"{command} {arguments[0]} {arguments[1]} {ID}"
+                    request = f"{command} {arguments[0]} {arguments[1]} {ID}"
 
             if command == "UNLOCK":
 
-                    sendToServer = f"{command} {arguments[0]} {ID}"
+                    request = f"{command} {arguments[0]} {ID}"
 
             if command == "STATUS":
 
                 option = arguments[0]
                 value = arguments[1]
 
-                sendToServer = f"{command} {option} {value}"
+                request = f"{command} {option} {value}"
 
             if command == "STATS":
 
                 option = arguments[0]
 
-                sendToServer = f"{command} {option}"
+                request = f"{command} {option}"
 
             if command == "PRINT":
-
-                sendToServer = command
+                request = command
 
     else:
         print(UNKNOWN_COMMAND_ERROR)
 
-    if sendToServer:
-        print("Sent:", sendToServer, "\n")
+    if request:
+        
+        try:
+        
+            server = nc.server(HOST, PORT)
+            server.connect()
+            response = server.send_receive(request.encode("utf-8")).decode("utf-8")
+            server.close()
+            
+            print("\n" + "Sent:", request)
+            print("Received:\n" + response, "\n")
 
-        server = nc.server(HOST, PORT)
-        server.connect()
-        response = server.send_receive(sendToServer)
-        server.close()
+        except ConnectionRefusedError:
+            print(CONNECTION_REFUSED_ERROR)
 
-        print("Received:", response)
-
-
-
-
-
-
-
-
-
-    
-
-
-#print(args)
+        except ConnectionError:
+            print(GENERAL_CONNECTION_ERROR)
