@@ -307,6 +307,7 @@ try:
         print("Sent: " + "\n    " + reply + "\n")
 
         # TODO - Close the connection?
+        # do you agree with him?
         conn_sock.close()
         
     sock.close()
@@ -316,3 +317,7 @@ except KeyboardInterrupt as e:
     print("\nReceived SIGINT, stopping.\n") #Received SIGINT
     sock.close()
     sys.exit(1)
+
+# except (ConnectionError, OSError):
+#     print(NETWORK_ERROR)
+#     sys.exit(1)
