@@ -11,11 +11,13 @@ Números de aluno: 55373, 55371
 import time
 import sys
 import sock_utils as su
+import color_utils as cu
 
 ## TODO: Implement clear console
 ## TODO: GREEN OK RED NOK E POR CORES EM TUDO XDDDDDDDDDDDDD
 
 ###############################################################################
+
 
 class resource_lock:
     def __init__(self, resource_id):
@@ -37,11 +39,11 @@ class resource_lock:
             self._state = "LOCKED"
             self._lock_client_id = client_id
             self._lock_counter += 1
-            self._lock_timer += time_limit
+            self._lock_timer = time.time() + time_limit
             return "OK"
         elif self._state == "LOCKED":
             if self._lock_client_id == client_id:
-                self._lock_timer += time_limit
+                self._lock_timer = time.time() + time_limit
                 self._lock_counter += 1
                 return "OK"
         return "NOK"
@@ -74,10 +76,12 @@ class resource_lock:
             return self._state
         elif option == 'K':
             return self._lock_counter
+        elif option == 'T':
+            return self._lock_timer
 
     def disable(self):
         """
-        Coloca o recurso como desabilitdado incondicionalmente, alterando os 
+        Coloca o recurso como desabilitado incondicionalmente, alterando os 
         valores associados à sua disponibilidade.
         """
         self._state = "DISABLED"
@@ -131,8 +135,10 @@ class lock_pool:
         concessão tenha expirado.
         """
         for i in self._locks:
-            if i._state == "LOCKED" and time.time() > i._lock_timer:
+            if i.status('R') == "LOCKED" and time.time() > i.status('T'):
                 i.release()
+                if i.status('K') == self._max_lock_counter:
+                    i.disable()
 
 
     def lock(self, resource_id, client_id, time_limit):
@@ -141,7 +147,7 @@ class lock_pool:
         time_limit segundos. Retorna OK, NOK ou UNKNOWN RESOURCE.
         """
         # resource = self._locks[resource_id]
-        if resource_id > 0 or resource_id < (len(self._locks) - 1):
+        if resource_id >= 0 and resource_id < (len(self._locks)):
             if self.status('K', resource_id) < self._max_lock_counter and self.stats('Y') < self._max_locked_resources:
                 if self.status('R', resource_id) != "DISABLED":
                     return self._locks[resource_id].lock(client_id, time_limit)
@@ -154,7 +160,7 @@ class lock_pool:
         Liberta o bloqueio sobre o recurso resource_id pelo cliente client_id.
         Retorna OK, NOK ou UNKNOWN RESOURCE.
         """
-        if resource_id > 0 or resource_id < (len(self._locks) - 1):
+        if resource_id >= 0 and resource_id < (len(self._locks)):
             if self.status('R', resource_id) != "UNLOCKED" and self.status('R', resource_id) != "DISABLED":
                 return self._locks[resource_id].unlock(client_id)
             return "NOK"
@@ -166,7 +172,7 @@ class lock_pool:
         DISABLED ou UNKNOWN RESOURCE. Se option for K, retorna <número de 
         bloqueios feitos no recurso> ou UNKNOWN RESOURCE.
         """
-        if resource_id > 0 or resource_id < (len(self._locks) - 1):
+        if resource_id >= 0 and resource_id < (len(self._locks)):
             return self._locks[resource_id].status(option)
         return "UNKNOWN RESOURCE"
 
@@ -175,7 +181,7 @@ class lock_pool:
         Obtém o estado do serviço de exclusão mútua. Se option for Y, retorna 
         <número de recursos bloqueados atualmente>. Se option for N, retorna 
         <número de recursos disponíveis atualmente>. Se option for D, retorna 
-        <número de recursos desabilitdados>
+        <número de recursos desabilitados>
         """
         if option.upper() == 'Y':
             total_locked_resources = 0
@@ -183,6 +189,8 @@ class lock_pool:
                 if lock.status('R') == 'LOCKED':
                     total_locked_resources += 1
             return total_locked_resources
+
+            # return len([lock for lock in self._locks if lock.status('R') == 'LOCKED'])
         
         elif option.upper() == "N":
             total_unlocked_resources = 0
@@ -205,19 +213,19 @@ class lock_pool:
         esta função é usada, por exemplo, se uma instância da classe for
         passada à função print ou str.
         """
-        output = ""
-        for lock in self._locks:
-            output += repr(lock) + "\n"
-        #
+        
+
         # Acrescentar no output uma linha por cada recurso
-        #
-        return output
+        
+        return "\n    ".join([repr(lock) for lock in self._locks])
 
 ###############################################################################
 
 # código do programa principal
 
 PARAMETER_ERROR = "Verifique os parâmetros.\nUtilização: lock_server.py <IP/Hostname> <Porto> <Nº de Recursos> <Nº de Bloqueios Permitidos> <Max. de Recursos Bloqueados Simultaneamente"
+NETWORK_ERROR = "Host/Port inválidos ou outro problema de ligação."
+SEPARATOR = "———————————————————————————————————————"
 
 args = sys.argv[1:]
 
@@ -234,14 +242,8 @@ try:
     RESOURCES = int(args[2])
     MAX_RESOURCE_LOCKS = int(args[3])
     MAX_RESOURCES_LOCKED = int(args[4])
-
-
-#     TODO: fix this, has to accept all hostnames
     
-#    pattern = re.compile(r"^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\.(?!$)|$)){4}$")
 
-#    if not pattern.search(HOST) and HOST.lower() != "localhost" :
-#        raise Exception
     
 except Exception as e:
     print(PARAMETER_ERROR)
@@ -251,61 +253,66 @@ try:
     lockpool = lock_pool(RESOURCES, MAX_RESOURCE_LOCKS, MAX_RESOURCES_LOCKED)
     
     sock = su.listener_socket(HOST, PORT, 1)
-OK
+
     while True:
         
         # TODO - Deal with disabling resources with max locks reached
         
         (conn_sock, (addr, port)) = sock.accept()
-
-        print(f'Connected to {addr} on port {port}\n')
-
+        print(SEPARATOR)
+        print(cu.colorWrite(f'Connected to {addr} on port {port}\n', 'green'))
+        
         lockpool.clear_expired_locks()
 
         msg = su.receive_all(conn_sock, 1024).decode("utf-8")
-        print(f'Received: {msg}')
-
 
         parsed_msg = msg.split()
 
-        command = parsed_msg[0]
+        command = parsed_msg[0].upper()
 
         reply = "NOK"
 
-        if command.upper() == "LOCK":
+        if command == "LOCK":
             r_id = int(parsed_msg[1])
             time_limit = int(parsed_msg[2])
             c_id = int(parsed_msg[3])
             reply = lockpool.lock(r_id, c_id, time_limit)
         
-        elif command.upper() == "UNLOCK":
+        elif command == "UNLOCK":
             r_id = int(parsed_msg[1])
             c_id = int(parsed_msg[2])
             reply = lockpool.unlock(r_id, c_id)
         
-        elif command.upper() == "STATUS":
+        elif command == "STATUS":
             option = parsed_msg[1]
             r_id = int(parsed_msg[2])
             reply = lockpool.status(option, r_id)
 
-        elif command.upper() == "STATS":
+        elif command == "STATS":
             option = parsed_msg[1]
             reply = lockpool.stats(option)
         
-        elif command.upper() == "PRINT":
-            reply = repr(lockpool)
+        elif command == "PRINT":
+            reply = f"Current Epoch: {int(time.time())}\n    "
+            reply += repr(lockpool)
 
-        
-        conn_sock.sendall(reply.encode("utf-8"))
-        print("Sent:\n" + reply)
+        conn_sock.sendall(str(reply).encode("utf-8"))
+
+        if command == "PRINT":
+            reply = cu.color(reply, "PRINT")
+        else:
+            reply = cu.color(reply)
+
+        print(f'Received: \n    {msg}')
+        print("Sent: " + "\n    " + reply + "\n")
 
         # TODO - Close the connection?
+        conn_sock.close()
         
     sock.close()
 
     
-
-
 except KeyboardInterrupt as e:
-    print("Good-bye!\n") #Received SIGINT
+    print("\nReceived SIGINT, stopping.\n") #Received SIGINT
     sock.close()
+    sys.exit(1)

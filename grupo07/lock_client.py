@@ -7,9 +7,12 @@ Números de aluno: 55373, 55371
 """
 
 # TODO: DOCUMENT EVERYTHING
+# TODO: colors
 
 ### Imports
 
+from color_utils import color
+from os import system
 import sys
 import re
 from time import sleep
@@ -27,9 +30,8 @@ EXCESSIVE_ARGUMENTS_ERROR = "TOO MANY ARGUMENTS"
 INVALID_ARGUMENTS_ERROR = "INVALID ARGUMENTS"
 GENERAL_CONNECTION_ERROR = "CONNECTION ERROR"
 CONNECTION_REFUSED_ERROR = "CONNECTION REFUSED"
+SEPARATOR = "———————————————————————"
 
-
-### Funções Adicionais
 
 def argumentChecker(userInput):
 
@@ -144,74 +146,87 @@ except Exception as e:
 
 
 while True:
+    try:
+        request = ""
 
-    ####TODO: Fix this variable, it only exists until server is working
-    request = ""
-    ####
+        userInput = input("Command > ").upper().split()
+        command = userInput[0]
+        arguments = userInput[1:]
 
-    userInput = input("Command > ").upper().split()
-    command = userInput[0]
-    arguments = userInput[1:]
+        if command == "EXIT":
+            break
 
-    if command == "EXIT":
-        break
-
-    if command == "SLEEP":
-        try:
-            amount = int(arguments[0])
-            sleep(amount)
-                
-        except:
-            print(MISSING_ARGUMENTS_ERROR)
-        
-        continue
-
-    if command in serverCommands:
-
-
-        if argumentChecker(userInput):
-        
-            if command == "LOCK":
-                
-                    request = f"{command} {arguments[0]} {arguments[1]} {ID}"
-
-            if command == "UNLOCK":
-
-                    request = f"{command} {arguments[0]} {ID}"
-
-            if command == "STATUS":
-
-                option = arguments[0]
-                value = arguments[1]
-
-                request = f"{command} {option} {value}"
-
-            if command == "STATS":
-
-                option = arguments[0]
-
-                request = f"{command} {option}"
-
-            if command == "PRINT":
-                request = command
-
-    else:
-        print(UNKNOWN_COMMAND_ERROR)
-
-    if request:
-        
-        try:
-        
-            server = nc.server(HOST, PORT)
-            server.connect()
-            response = server.send_receive(request.encode("utf-8")).decode("utf-8")
-            server.close()
+        if command == "SLEEP":
+            try:
+                amount = int(arguments[0])
+                sleep(amount)
+                    
+            except:
+                print(MISSING_ARGUMENTS_ERROR)
             
-            print("\n" + "Sent:", request)
-            print("Received:\n" + response, "\n")
+            continue
 
-        except ConnectionRefusedError:
-            print(CONNECTION_REFUSED_ERROR)
+        if command == "CLEAR":
+            system("clear")
+            continue
 
-        except ConnectionError:
-            print(GENERAL_CONNECTION_ERROR)
+        if command in serverCommands:
+
+
+            if argumentChecker(userInput):
+            
+                if command == "LOCK":
+                    
+                        request = f"{command} {arguments[0]} {arguments[1]} {ID}"
+
+                if command == "UNLOCK":
+
+                        request = f"{command} {arguments[0]} {ID}"
+
+                if command == "STATUS":
+
+                    option = arguments[0]
+                    value = arguments[1]
+
+                    request = f"{command} {option} {value}"
+
+                if command == "STATS":
+
+                    option = arguments[0]
+
+                    request = f"{command} {option}"
+
+                if command == "PRINT":
+                    request = command
+            
+
+        else:
+            print(UNKNOWN_COMMAND_ERROR)
+
+
+
+        if request:
+            
+            try:
+            
+                server = nc.server(HOST, PORT)
+                server.connect()
+                response = server.send_receive(request.encode("utf-8")).decode("utf-8")
+                server.close()
+
+                response = color(response, command)
+
+                print("Sent:\n    " + request)
+                print("Received:\n    " + response)
+
+            except ConnectionRefusedError:
+                print(CONNECTION_REFUSED_ERROR)
+
+            except ConnectionError:
+                print(GENERAL_CONNECTION_ERROR)
+
+    except KeyboardInterrupt as e:
+        print("\nReceived SIGINT, stopping.\n") #Received SIGINT
+        sys.exit(1)
+
+    print()
