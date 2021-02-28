@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Aplicações distribuídas - Projeto 1 - net_client.py
 Grupo: 07

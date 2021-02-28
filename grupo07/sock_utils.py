@@ -1,5 +1,5 @@
 """
-Aplicações distribuídas - Projeto 1 - lock_server.py
+Aplicações distribuídas - Projeto 1 - sock_utils.py
 Grupo: 07
 Números de aluno: 55373, 55371
 """
@@ -9,10 +9,14 @@ import socket as s
 # TODO: DOCUMENT EVERYTHING
 
 def create_tcp_server_socket(address, port, queue_size):
+    """
+    Cria uma socket de servidor.
+    Requires: address e port são válidos. queue_size é um inteiro.
+    Ensures: retorno de uma socket de servidor anexada ao endereço e porta
+    referidos.
+    """
     
     sock = s.socket(s.AF_INET, s.SOCK_STREAM)
-
-    # If you're having problems you might wanna comment this out 
     sock.setsockopt(s.SOL_SOCKET, s.SO_REUSEADDR, 1)
     sock.bind((address, port))
     sock.listen(queue_size)
@@ -20,11 +24,20 @@ def create_tcp_server_socket(address, port, queue_size):
     return sock
 
 def create_tcp_client_socket():
+    """
+    Cria uma socket de cliente.
+    Ensures: retorno de uma socket de cliente.
+    
+    """
     sock = s.socket(s.AF_INET, s.SOCK_STREAM)
     return sock
 
 def receive_all(socket, length):
-    # TODO: FIX THIS ON FRIDAY
+    """
+    Recebe a length especificada de dados através da socket especificada.
+    Requires: socket é uma socket, length é um inteiro.
+    Ensures: devolve dados obtidos através da socket.
+    """
     
     try:
         socket.settimeout(30)
