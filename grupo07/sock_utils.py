@@ -6,8 +6,6 @@ Números de aluno: 55373, 55371
 
 import socket as s
 
-# TODO: DOCUMENT EVERYTHING
-
 def create_tcp_server_socket(address, port, queue_size):
     """
     Cria uma socket de servidor.

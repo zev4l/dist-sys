@@ -4,8 +4,6 @@ Grupo: 07
 Números de aluno: 55373, 55371
 """
 
-# TODO: Help
-
 ### Imports
 
 import color_utils as cu
@@ -286,7 +284,7 @@ while not halt:
                 response = server.send_receive(request.encode("utf-8")).decode("utf-8")
                 server.close()
 
-                # Uso do módulo color_utils para 
+                # Uso do módulo color_utils para estilizar o output
                 response = cu.color(response, command)
 
                 print("\nSent:\n    " + request)
