@@ -11,7 +11,7 @@ Números de aluno: 55373, 55371
 
 ### Imports
 
-from color_utils import color
+from color_utils import color, colorWrite
 from os import system
 import sys
 import re
@@ -28,9 +28,12 @@ UNKNOWN_COMMAND_ERROR = "UNKNOWN COMMAND"
 MISSING_ARGUMENTS_ERROR = "MISSING ARGUMENTS"
 EXCESSIVE_ARGUMENTS_ERROR = "TOO MANY ARGUMENTS"
 INVALID_ARGUMENTS_ERROR = "INVALID ARGUMENTS"
-GENERAL_CONNECTION_ERROR = "CONNECTION ERROR"
-CONNECTION_REFUSED_ERROR = "CONNECTION REFUSED"
-SEPARATOR = "———————————————————————"
+GENERAL_CONNECTION_ERROR = colorWrite("CONNECTION ERROR", 'red')
+CONNECTION_REFUSED_ERROR = colorWrite("CONNECTION REFUSED", 'red')
+SEPARATOR = "———————————————————————————————————————"
+
+with open("~/.config/")
+
 
 
 def argumentChecker(userInput):
@@ -92,7 +95,8 @@ def argumentChecker(userInput):
             return False
 
     if command == "STATS":
-        # Caso o comando seja STATS, deve-se verificar o tipo de dados
+        # Caso o comando seja STATS, deve-se verificarAdding everything together, I wrote a simple cli for sending mails through SendGrid. So to use the script below, go get your API Key from SendGrid.
+ o tipo de dados
         # e integridade dos argumentos fornecidos. (("Y", "N", "D"))
 
         try:
@@ -132,12 +136,6 @@ try:
     HOST = str(args[1])
     PORT = int(args[2])
 
-#     TODO: fix this, has to accept all hostnames
-    
-#    pattern = re.compile(r"^((25[0-5]|(2[0-4]|1[0-9]|[1-9]|)[0-9])(\.(?!$)|$)){4}$")
-
-#    if not pattern.search(HOST) and HOST.lower() != "localhost" :
-#        raise Exception
     
 except Exception as e:
     print(PARAMETER_ERROR)
@@ -149,7 +147,7 @@ while True:
     try:
         request = ""
 
-        userInput = input("Command > ").upper().split()
+        userInput = input(f"client_{ID}@{colorWrite(HOST, 'green')}: ").upper().split()
         command = userInput[0]
         arguments = userInput[1:]
 
@@ -171,7 +169,7 @@ while True:
             continue
 
         if command in serverCommands:
-
+            
 
             if argumentChecker(userInput):
             
@@ -204,7 +202,6 @@ while True:
             print(UNKNOWN_COMMAND_ERROR)
 
 
-
         if request:
             
             try:
@@ -222,8 +219,9 @@ while True:
             except ConnectionRefusedError:
                 print(CONNECTION_REFUSED_ERROR)
 
-            except ConnectionError:
+            except:
                 print(GENERAL_CONNECTION_ERROR)
+            
 
     except KeyboardInterrupt as e:
         print("\nReceived SIGINT, stopping.\n") #Received SIGINT

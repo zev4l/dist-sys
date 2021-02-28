@@ -296,7 +296,9 @@ try:
             reply = f"Current Epoch: {int(time.time())}\n    "
             reply += repr(lockpool)
 
-        conn_sock.sendall(str(reply).encode("utf-8"))
+        reply = str(reply)
+
+        conn_sock.sendall(reply.encode("utf-8"))
 
         if command == "PRINT":
             reply = cu.color(reply, "PRINT")
@@ -318,6 +320,6 @@ except KeyboardInterrupt as e:
     sock.close()
     sys.exit(1)
 
-# except (ConnectionError, OSError):
-#     print(NETWORK_ERROR)
-#     sys.exit(1)
+except (ConnectionError, OSError):
+    print(NETWORK_ERROR)
+    sys.exit(1)

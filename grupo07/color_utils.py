@@ -30,7 +30,7 @@ def color(content, command = None):
     elif content == 'OK':
         content = colorWrite(content, 'green')
 
-    if command == "PRINT":
+    if command in ("PRINT", "STATUS"):
         content = re.sub(r"\bLOCKED\b", colorWrite("LOCKED", "red"), content)
         content = re.sub(r"\bUNLOCKED\b", colorWrite("UNLOCKED", "green"), content)
         content = re.sub(r"\bDISABLED\b", colorWrite("DISABLED", "bk_red"), content)
