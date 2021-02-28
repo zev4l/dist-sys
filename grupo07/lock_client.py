@@ -32,9 +32,6 @@ GENERAL_CONNECTION_ERROR = colorWrite("CONNECTION ERROR", 'red')
 CONNECTION_REFUSED_ERROR = colorWrite("CONNECTION REFUSED", 'red')
 SEPARATOR = "———————————————————————————————————————"
 
-with open("~/.config/")
-
-
 
 def argumentChecker(userInput):
 
