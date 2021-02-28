@@ -92,8 +92,7 @@ def argumentChecker(userInput):
             return False
 
     if command == "STATS":
-        # Caso o comando seja STATS, deve-se verificarAdding everything together, I wrote a simple cli for sending mails through SendGrid. So to use the script below, go get your API Key from SendGrid.
- o tipo de dados
+        # Caso o comando seja STATS, deve-se verificar
         # e integridade dos argumentos fornecidos. (("Y", "N", "D"))
 
         try:
