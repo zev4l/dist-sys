@@ -1,6 +1,6 @@
 """
 Aplicações distribuídas - Projeto 1 - net_client.py
-Grupo: 07
+Grupo: 77
 Números de aluno: 55373, 55371
 """
 

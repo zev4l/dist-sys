@@ -1,7 +1,7 @@
 
 """
 Aplicações distribuídas - Projeto 1 - lock_server.py
-Grupo: 07
+Grupo: 77
 Números de aluno: 55373, 55371
 """
 
