@@ -52,7 +52,7 @@ class lock_pool:
     def lock(self, resource_id, client_id, time_limit):
         """
         Tenta bloquear o recurso resource_id pelo cliente client_id, durante
-        time_limit segundos. Retorna OK, NOK ou UNKNOWN RESOURCE.
+        time_limit segundos. Retorna True, False ou None.
         """
         if resource_id >= 0 and resource_id < (len(self._locks)): # Se o recurso que pretende bloquear existe na pool
 
@@ -70,7 +70,7 @@ class lock_pool:
     def unlock(self, resource_id, client_id):
         """
         Liberta o bloqueio sobre o recurso resource_id pelo cliente client_id.
-        Retorna OK, NOK ou UNKNOWN RESOURCE.
+        Retorna True, False ou None.
         """
         if resource_id >= 0 and resource_id < (len(self._locks)): # Se o recurso que pretende desbloquear existe na pool
             if self.status('R', resource_id) != "UNLOCKED" and self.status('R', resource_id) != Ellipsis: # Se o recurso está bloqueado
@@ -84,8 +84,8 @@ class lock_pool:
     def status(self, option, resource_id):
         """
         Obtém o estado de um recurso. Se option for R, retorna LOCKED, UNLOCKED,
-        DISABLED ou UNKNOWN RESOURCE. Se option for K, retorna <número de 
-        bloqueios feitos no recurso> ou UNKNOWN RESOURCE.
+        Ellipsis ou None. Se option for K, retorna <número de 
+        bloqueios feitos no recurso> ou None.
         """
         if resource_id >= 0 and resource_id < (len(self._locks)): # Se o recurso que pretende consultar existe na pool
             resource = self._locks[resource_id]
@@ -157,7 +157,7 @@ class resource_lock:
     def lock(self, client_id, time_limit):
         """
         Tenta bloquear o recurso pelo cliente client_id, durante time_limit 
-        segundos, alterando os valores associados ao bloqueio. Retorna OK ou NOK.
+        segundos, alterando os valores associados ao bloqueio. Retorna True ou False.
         """
 
         # Caso o recurso se encontre desbloqueado, o mesmo passa a estar bloqueado
@@ -188,7 +188,7 @@ class resource_lock:
     def unlock(self, client_id):
         """
         Liberta o recurso se este está bloqueado pelo cliente client_id.
-        Retorna OK ou NOK.
+        Retorna True ou False.
         """
         # Caso o cliente que esteja a tentar desbloquear o recurso 
         # seja o mesmo que o bloqueou, o recurso é desbloqueado 

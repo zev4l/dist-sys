@@ -14,35 +14,20 @@ class skel:
     def __init__(self, N, K, Y):
         self._lockpool = lp.lock_pool(N, K, Y)
 
-    def translate(self, content):
-        content = content.copy()
-
-        element = 0
-        while element < len(content):
-            if content[element] == "OK":
-                content[element] = True
-            
-            elif content[element] == "NOK":
-                content[element] = False
-
-            elif content[element] == "UNKNOWN RESOURCE":
-                content[element] = None
-
-            elif content[element] == "DISABLED":
-                content[element] = Ellipsis
-        
-        return content
 
     # Auxiliary Functions
 
     def compact(self, content):
+        """
+        """
         reply_bytes = pickle.dumps(content, -1)
         size_bytes = struct.pack('i',len(reply_bytes))
         return size_bytes, reply_bytes
 
 
     def processMessage(self, msg_bytes):
-
+        """
+        """
         # Obtenção do pedido do cliente
         request = pickle.loads(msg_bytes)
 

@@ -1,2 +1,0 @@
-Verifique os parâmetros.
-Utilização: lock_client.py <ID> <IP/Hostname> <Porto>

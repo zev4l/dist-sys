@@ -6,14 +6,14 @@ Números de aluno: 55373, 55371
 
 ### Imports
 
-import color_utils as cu
-from os import system
 import sys
+import getopt
+from lock_stub import stub
+from os import system
 from time import sleep
 import net_client as nc
-from lock_stub import stub
-import getopt
-import traceback
+import color_utils as cu
+
 
 ### Variáveis Globais
 
@@ -149,21 +149,25 @@ def argumentChecker(userInput):
         return True
 
 def translate(content):
+    """
+    Ao receber uma lista de elementos (str ou nativos) como True, False, None,
+    devolve a versão verbose correspondente.
+    """
     content = content.copy()
+
+    subs = {True:"OK",
+        False:"NOK",
+        None:"UNKNOWN RESOURCE",
+        Ellipsis:"DISABLED"}
 
     element = 0
     while element < len(content):
-        if content[element] is True:
-            content[element] = "OK"
-        
-        elif content[element] is False:
-            content[element] = "NOK"
 
-        elif content[element] is None:
-            content[element] = "UNKNOWN RESOURCE"
+        if content[element] in subs:
+            content[element] = subs[content[element]]
 
-        elif content[element] is Ellipsis:
-            content[element] = "DISABLED"
+        if "Ellipsis" in str(content[element]):
+            content[element] = content[element].replace("Ellipsis", "DISABLED")
 
         element += 1
     
@@ -173,17 +177,11 @@ def translate(content):
 
 # Programa Principal
 
-
-
 # Verificação e validação de argumentos iniciais
 
 try:
 
     opts, args = getopt.getopt(sys.argv[1:], "rc")
-
-    print(args)
-    print(opts)
-
 
     ID = int(args[0])
     HOST = str(args[1])
@@ -202,7 +200,6 @@ except Exception as e:
 
 halt = False
 
-
 try:
     # Uso do stub para estabelecer uma ligação ao servidor 
     stub = stub(HOST, PORT)
@@ -215,7 +212,13 @@ try:
             request = ""
 
             # Processamento dos dados introduzidos pelo utilizador
-            userInput = input(f"client_{ID} ▶ {cu.colorWrite(HOST, 'green')}: ").upper().split()
+            
+            if not len([opt for opt in opts if "-c" in opt]):
+                handle = f"client_{ID} ▶ {cu.colorWrite(HOST, 'green')}: "
+            else:
+                handle = f"client_{ID} ▶ {HOST}: "
+
+            userInput = input(handle).upper().split()
 
             # Passar ao próximo ciclo caso o utilizador não introduza nada
             if not userInput:
@@ -299,12 +302,12 @@ try:
                         request, response = stub.print()
 
 
-                    # if len([opt for opt in opts if "-r" in opt]):
-                    #     # Uso da função auxiliar translate() para traduzir o conteúdo
-                    #     # recebido do servidor em algo legível para o utilizador
-                    #     response = translate(response)
+                    if len([opt for opt in opts if "-r" in opt]):
+                        # Uso da função auxiliar translate() para traduzir o conteúdo
+                        # recebido do servidor em algo legível para o utilizador
+                        response = translate(response)
 
-                    if len([opt for opt in opts if "-c" in opt]):
+                    if not len([opt for opt in opts if "-c" in opt]):
                         # Uso do módulo color_utils para estilizar o output
                         response = cu.color(response, command)
 
@@ -314,9 +317,9 @@ try:
 
                     if command == "PRINT":
                         print("\nReceived:\n[" + str(response[0])+",")
-                        print(response[1] + "\n")
+                        print(response[1] + "]\n")
                     else:
-                        print("\nReceived:\n" + str(response) + "\n")
+                        print("\nReceived:\n" + "[" + ", ".join([str(elem) for elem in response]) + "]" + "\n")
                         
 
             else:

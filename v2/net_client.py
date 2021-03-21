@@ -29,15 +29,6 @@ class server:
         """
         self._sock.connect((self._address, self._port))
 
-    # def send_receive(self, data):
-    #     """
-    #     Envia os dados contidos em data para a socket da ligação, e retorna
-    #     a resposta recebida pela mesma socket.
-    #     """
-    #     self._sock.sendall(data)
-        
-    #     return receive_all(self._sock, 1024)
-
     def send(self, data):
         """
         Envia os dados contidos em data para a socket da ligação, e retorna
@@ -46,11 +37,16 @@ class server:
         self._sock.sendall(data)
 
     def recv(self, bytes):
+        """
+        Recebe um número fixo de bytes.
+        """
         return self._sock.recv(bytes)
 
     def receive_all(self, bytes):
+        """
+        Garantidamente recebe um número fixo de bytes.
+        """
         return receive_all(self._sock, bytes)
-
 
     def close(self):
         """

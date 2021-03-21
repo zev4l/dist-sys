@@ -37,27 +37,30 @@ def colorWrite(text, color):
 def color(content, command = None):
     """
     Processa um pedido/resposta atribuindo as cores respetivas aos substrings 
-    LOCKED, UNLOCKED, DISABLED, UNKNOWN RESOURCE, NOK e OK.
-    Requires: content é um string. command é PRINT ou STATUS
+    LOCKED, UNLOCKED, DISABLED, UNKNOWN RESOURCE, NOK e OK ou aos objetos nativos
+    True, False, None e Ellipsis.
+    Requires: content é uma lista. command é PRINT ou STATUS
     """
 
-    content = str(content)
+    elem = 0
 
-    print(content)
+    while elem < len(content):
 
-    if content in ('NOK', 'UNKNOWN RESOURCE', 'False', 'None'):
-        content = colorWrite(content, 'red')
-    elif content in ('OK', 'True'):
-        content = colorWrite(content, 'green')
 
-    if command in ("PRINT", "STATUS"):
-        # Uso de Regular Expressions para alterar ocorrências de 
-        # palavras para sua versão colorida.
-        content = re.sub(r"\bLOCKED\b", colorWrite("LOCKED", "red"), content)
-        content = re.sub(r"\bUNLOCKED\b", colorWrite("UNLOCKED", "green"), content)
-        content = re.sub(r"\bEllipsis\b", colorWrite("Ellipsis", "bk_red"), content)
-        content = re.sub(r"\bDISABLED\b", colorWrite("DISABLED", "bk_red"), content)
 
-    print(content)
+        if str(content[elem]) in ('NOK', 'UNKNOWN RESOURCE', 'False', 'None'):
+            content[elem] = colorWrite(str(content[elem]), 'red')
+        elif str(content[elem]) in ('OK', 'True'):
+            content[elem] = colorWrite(str(content[elem]), 'green')
+
+        if command in ("PRINT", "STATUS"):
+            # Uso de Regular Expressions para alterar ocorrências de 
+            # palavras para sua versão colorida.
+            content[elem] = re.sub(r"\bLOCKED\b", colorWrite("LOCKED", "red"), str(content[elem]))
+            content[elem] = re.sub(r"\bUNLOCKED\b", colorWrite("UNLOCKED", "green"), str(content[elem]))
+            content[elem] = re.sub(r"\bEllipsis\b", colorWrite("Ellipsis", "bk_red"), str(content[elem]))
+            content[elem] = re.sub(r"\bDISABLED\b", colorWrite("DISABLED", "bk_red"), str(content[elem]))
+        
+        elem += 1
 
     return content
