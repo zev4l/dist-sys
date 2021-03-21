@@ -12,6 +12,8 @@ import sock_utils as su
 import color_utils as cu
 import lock_pool as lp
 import time
+import select as sel
+from lock_skel import skel
 
 
 # código do programa principal
@@ -41,98 +43,68 @@ except Exception as e: # Se algum parâmetro se encontra incorreto, é apresenta
     sys.exit(1)
 
 try:
-    
+
     # Inicialização da pool de recursos
     lockpool = lp.lock_pool(RESOURCES, MAX_RESOURCE_LOCKS, MAX_RESOURCES_LOCKED)
     
     # Inicialização de uma socket de escuta
     sock = su.listener_socket(HOST, PORT, 1)
 
-    while True:
+    SocketList = [sock, sys.stdin]
+    halt = False
+
+    while True and not halt:
         
-        # Aguarda por um pedido de conexão de um cliente        
-        (conn_sock, (addr, port)) = sock.accept()
-        
-        # (Uso do módulo color_utils por razões estéticas)
-        print(SEPARATOR)
-        print(cu.colorWrite(f'Connected to {addr} on port {port}\n', 'green'))
-        
-        # Remoção de bloqueios expirados/desabilitação de recursos 
-        lockpool.clear_expired_locks()
+        R, W, X = sel.select(SocketList, [], [])
 
-        # Receção da mensagem do cliente
-        # TODO: Altera para receber primeiro os 4 bytes do inteiro e depois a mensagem
- 
+        for sckt in R:
+            if sckt is sock:
+                # Aguarda por um pedido de conexão de um cliente        
+                (conn_sock, (addr, port)) = sock.accept()
+                
+                # (Uso do módulo color_utils por razões estéticas)
+                print(SEPARATOR)
+                print(cu.colorWrite(f'Connected to {addr} on port {port}\n', 'green'))
 
-        msg = su.receive_all(conn_sock, 1024).decode("utf-8")
+            elif sckt is sys.stdin:
 
-        # Divisão da mensagem recebida 
-        parsed_msg = msg.split()
+                command = sys.stdin.readline()
+                if command.upper() == "EXIT":
+                    halt = True
 
-        # O comando pretendido encontra-se na primeira parte da mensagem recebida
-        command = parsed_msg[0].upper()
+            else:
 
-        reply = "NOK"
+                # Receção da mensagem do cliente
+                # Receber primeiro a quantidade de bytes na mensagem
+                size_bytes = conn_sock.recv(4)
 
-        if command == "LOCK": 
-            # Caso o comando seja "LOCK", são passados como argumentos ao comando interno 
-            # o ID do recurso, o tempo limite desejado e o ID do cliente
-            r_id = int(parsed_msg[1])
-            time_limit = int(parsed_msg[2])
-            c_id = int(parsed_msg[3])
+                if size_bytes:
 
-            # A resposta ao cliente depende da conclusão do comando pretendido
-            reply = lockpool.lock(r_id, c_id, time_limit)
-        
-        elif command == "UNLOCK":
-            # Caso o comando seja "UNLOCK", são passados como argumentos ao comando interno
-            # o ID do recurso e o ID do cliente
-            r_id = int(parsed_msg[1])
-            c_id = int(parsed_msg[2])
-            
-            # A resposta ao cliente depende da conclusão do comando pretendido
-            reply = lockpool.unlock(r_id, c_id)
-        
-        elif command == "STATUS":
-            # Caso o comando seja "STATUS", são passados como argumentos ao comando interno
-            # a opção pretendida e o ID do cliente
-            option = parsed_msg[1]
-            r_id = int(parsed_msg[2])
+                    # E seguidamente os bytes da mensagem
+                    msg_bytes = su.receive_all(conn_sock, size_bytes)
 
-            # A resposta ao cliente depende da conclusão do comando pretendido
-            reply = lockpool.status(option, r_id)
+                    # Obtenção da resposta
+                    size_bytes, reply_bytes = skel.processMessage(msg_bytes)
 
-        elif command == "STATS":
-            # Caso o comando seja "STATS", é passado como argumento ao comando internp
-            # a opção pretendida
-            option = parsed_msg[1]
+                    # Enviar primeiro a quantidade de bytes ao cliente
+                    conn_sock.sendall(size_bytes)
+                    # E seguidamente, enviar os bytes da mensagem
+                    conn_sock.sendall(reply_bytes)
 
-            # A resposta ao cliente depende da conclusão do comando pretendido
-            reply = lockpool.stats(option)
-        
-        elif command == "PRINT":
-            # Caso o comando seja "PRINT", é enviada como resposta o epoch atual
-            # e o estado de cada recurso
-            reply = f"Current Epoch: {int(time.time())}\n    "
-            reply += repr(lockpool)
+                    # Caso o comando seja "PRINT", é feita uma colorização ao estado de cada recurso
+                    if command == "PRINT":
+                        reply = cu.color(reply, "PRINT")
+                    else:
+                        reply = cu.color(reply)
 
-        # Cast da resposta para uma string
-        reply = str(reply)
+                    print(f'Received: \n    {msg}')
+                    print("Sent: " + "\n    " + reply + "\n")
 
-        # Envio da resposta ao cliente
-        conn_sock.sendall(reply.encode("utf-8"))
+                else:
+                    print(cu.colorWrite(f'Client from {addr} on port {port} has disconnected.\n', 'red'))
+                    sckt.close()
+                    SocketList.remove(conn_sock)
 
-        # Caso o comando seja "PRINT", é feita uma colorização ao estado de cada recurso
-        if command == "PRINT":
-            reply = cu.color(reply, "PRINT")
-        else:
-            reply = cu.color(reply)
-
-        print(f'Received: \n    {msg}')
-        print("Sent: " + "\n    " + reply + "\n")
-
-        # Fecho da ligação com o cliente
-        conn_sock.close()
         
     sock.close()
 

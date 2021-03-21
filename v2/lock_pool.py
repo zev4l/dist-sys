@@ -64,8 +64,8 @@ class lock_pool:
 
                     # O resultado desta função depende da conclusão da função do recurso
                     return resource.lock(client_id, time_limit)
-            return "NOK"
-        return "UNKNOWN RESOURCE"
+            return False
+        return None
                 
     def unlock(self, resource_id, client_id):
         """
@@ -78,8 +78,8 @@ class lock_pool:
                 
                 # O resultado desta função depende da conclusão da função do recurso
                 return resource.unlock(client_id)
-            return "NOK"
-        return "UNKNOWN RESOURCE"
+            return False
+        return None
 
     def status(self, option, resource_id):
         """
@@ -92,7 +92,7 @@ class lock_pool:
             
             # O resultado desta função depende da conclusão da função do recurso
             return resource.status(option)
-        return "UNKNOWN RESOURCE"
+        return None
 
     def stats(self, option):
         """
@@ -124,7 +124,7 @@ class lock_pool:
                 if lock.status('R') == "DISABLED":
                     total_disabled_resources += 1
             return total_disabled_resources
-        return "UNKNOWN OPTION"
+        return None
 
     def __repr__(self):
         """
@@ -166,7 +166,7 @@ class resource_lock:
             self._lock_client_id = client_id
             self._lock_counter += 1
             self._lock_timer = time.time() + time_limit
-            return "OK"
+            return True
             
         # Caso o recurso se encontre bloqueado && o cliente que esteja
         # a tentar bloquear o recurso seja o dono do bloqueio atual, 
@@ -175,8 +175,8 @@ class resource_lock:
             if self._lock_client_id == client_id: 
                 self._lock_timer = time.time() + time_limit
                 self._lock_counter += 1
-                return "OK"
-        return "NOK"
+                return True
+        return False
 
     def release(self):
         """
@@ -194,8 +194,8 @@ class resource_lock:
         # seja o mesmo que o bloqueou, o recurso é desbloqueado 
         if self._lock_client_id == client_id: 
             self.release()
-            return "OK"
-        return "NOK"
+            return True
+        return False
 
     def status(self, option):
         """
