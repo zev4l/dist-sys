@@ -1,5 +1,5 @@
 """
-Aplicações distribuídas - Projeto 1 - color_utils.py
+Aplicações distribuídas - Projeto 2 - color_utils.py
 Grupo: 77
 Números de aluno: 55373, 55371
 """

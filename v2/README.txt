@@ -1,4 +1,4 @@
-Aplicações Distribuídas - Projeto 1
+Aplicações Distribuídas - Projeto 2
 Grupo 77
 
 

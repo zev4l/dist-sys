@@ -1,5 +1,5 @@
 """
-Aplicações distribuídas - Projeto 1 - lock_client.py
+Aplicações distribuídas - Projeto 2 - lock_client.py
 Grupo: 77
 Números de aluno: 55373, 55371
 """
@@ -11,6 +11,7 @@ from os import system
 import sys
 from time import sleep
 import net_client as nc
+from lock_stub import stub
 
 ### Variáveis Globais
 
@@ -145,12 +146,32 @@ def argumentChecker(userInput):
 
         return True
 
+def translate(content):
+    content = content.copy()
+
+    element = 0
+    while element < len(content):
+        if content[element] is True:
+            content[element] = "OK"
+        
+        elif content[element] is False:
+            content[element] = "NOK"
+
+        elif content[element] is None:
+            content[element] = "UNKNOWN RESOURCE"
+
+        elif content[element] is Ellipsis:
+            content[element] = "DISABLED"
+    
+    return content
+
+
 
 # Programa Principal
 
 args = sys.argv[1:]
 
-# Verificaçã e validação de argumentos iniciais
+# Verificação e validação de argumentos iniciais
 
 try:
     
@@ -171,138 +192,136 @@ except Exception as e:
 
 halt = False
 
-while not halt:
-    try:
 
-        # Inicialização da variável que irá albergar o request enviado para
-        # o servidor
-        request = ""
-
-        # Processamento dos dados introduzidos pelo utilizador
-        userInput = input(f"client_{ID} ▶ {cu.colorWrite(HOST, 'green')}: ").upper().split()
-
-        # Passar ao próximo ciclo caso o utilizador não introduza nada
-        if not userInput:
-            continue
-
-        command = userInput[0]
-        arguments = userInput[1:]
+try:
+    # Uso do stub para estabelecer uma ligação ao servidor 
+    stub = stub(HOST, PORT)
+    stub.connect()
 
 
-        if command == "EXIT":
-            # Sair do ciclo caso o utilizador invoque o comando EXIT
-            halt = True
-            continue
+    while not halt:
+        try:
 
-        elif command == "HELP":
-            print(HELP_MESSAGE)
+            # Inicialização da variável que irá albergar o request enviado para
+            # o servidor
+            request = ""
 
+            # Processamento dos dados introduzidos pelo utilizador
+            userInput = input(f"client_{ID} ▶ {cu.colorWrite(HOST, 'green')}: ").upper().split()
 
-        elif command == "SLEEP":
-            # Invocar sleep pela duração referida pelo utilizador caso este
-            # use o comando SLEEP. Caso o utilizador inclua a quantidade errada
-            # de argumentos, será informado através dos erros correspondentes,
-            # o mesmo acontecerá caso o argumento seja inválido.
-            
-            try:
-                if len(arguments) > 1:
-                    raise AssertionError
+            # Passar ao próximo ciclo caso o utilizador não introduza nada
+            if not userInput:
+                continue
 
-                amount = int(arguments[0])
-                sleep(amount)
-                    
-            except ValueError:
-                print(INVALID_ARGUMENTS_ERROR)
-            
-            except AssertionError:
-                print(EXCESSIVE_ARGUMENTS_ERROR)
-
-            except:
-                print(MISSING_ARGUMENTS_ERROR)
+            command = userInput[0]
+            arguments = userInput[1:]
 
 
-        elif command == "CLEAR":
-            # Limpar o histórico da consola caso o utilizador invoque o comando SLEEP.
-            system("clear")
+            if command == "EXIT":
+                # Sair do ciclo caso o utilizador invoque o comando EXIT
+                halt = True
+                stub.close()
+                continue
+
+            elif command == "HELP":
+                print(HELP_MESSAGE)
 
 
-        elif command in serverCommands:
-            
-            if argumentChecker(userInput):
-            # Uso da função argumentChecker para verificar a integridade de validade
-            # dos argumentos fornecidos pelo utilizador em relação ao comando que o mesmo
-            # invocou
-
-
-                # Formular o pedido antes de ser enviado ao servidor, contendo o comando
-                # e os respetivos argumentos na posição correta.
-                # Quando se trata de LOCK e UNLOCK, adicionar também o ID do cliente 
-                # ao pedido.
-
-                if command == "LOCK":
-                    
-                        request = f"{command} {arguments[0]} {arguments[1]} {ID}"
-
-                if command == "UNLOCK":
-
-                        request = f"{command} {arguments[0]} {ID}"
-
+            elif command == "SLEEP":
+                # Invocar sleep pela duração referida pelo utilizador caso este
+                # use o comando SLEEP. Caso o utilizador inclua a quantidade errada
+                # de argumentos, será informado através dos erros correspondentes,
+                # o mesmo acontecerá caso o argumento seja inválido.
                 
-                if command == "STATUS":
+                try:
+                    if len(arguments) > 1:
+                        raise AssertionError
 
-                    option = arguments[0]
-                    value = arguments[1]
+                    amount = int(arguments[0])
+                    sleep(amount)
+                        
+                except ValueError:
+                    print(INVALID_ARGUMENTS_ERROR)
+                
+                except AssertionError:
+                    print(EXCESSIVE_ARGUMENTS_ERROR)
 
-                    request = f"{command} {option} {value}"
-
-                if command == "STATS":
-
-                    option = arguments[0]
-
-                    request = f"{command} {option}"
-
-                if command == "PRINT":
-                    request = command
-            
-
-        else:
-            # Emitir erro de comando desconhecido caso este não se encontre na lista
-            # de comandos suportados pelo servidor e cliente.
-
-            print(UNKNOWN_COMMAND_ERROR)
+                except:
+                    print(MISSING_ARGUMENTS_ERROR)
 
 
-        # Caso o pedido tenha sido formulado corretamente:
-        if request:
-            
-            try:
-                # Uso do módulo net_client para estabelecer uma ligação ao servidor 
-                server = nc.server(HOST, PORT)
-                server.connect()
+            elif command == "CLEAR":
+                # Limpar o histórico da consola caso o utilizador invoque o comando SLEEP.
+                system("clear")
 
-                # Processamento da resposta recebida e fecho da conexão
-                response = server.send_receive(request.encode("utf-8")).decode("utf-8")
-                server.close()
 
-                # Uso do módulo color_utils para estilizar o output
-                response = cu.color(response, command)
+            elif command in serverCommands:
+                
+                if argumentChecker(userInput):
+                # Uso da função argumentChecker para verificar a integridade de validade
+                # dos argumentos fornecidos pelo utilizador em relação ao comando que o mesmo
+                # invocou
 
-                print("\nSent:\n    " + request)
-                print("Received:\n    " + response)
 
-            except ConnectionRefusedError:
-                # Emitir erro de conexão recusada caso seja impossível contactar o servidor.
-                print(CONNECTION_REFUSED_ERROR)
+                    # Formular o pedido antes de ser enviado ao servidor, contendo o comando
+                    # e os respetivos argumentos na posição correta.
+                    # Quando se trata de LOCK e UNLOCK, adicionar também o ID do cliente 
+                    # ao pedido.
 
-            except:
-                # Emitir erro geral de conexão caso hajam quaisqueres complicações no processo
-                # de envio do pedido ao servidor e receção da resposta. 
-                print(GENERAL_CONNECTION_ERROR)
-            
+                    #TODO: Start connection before exec stub functions...
 
-    except KeyboardInterrupt as e:
-        # Lidar com KeyboardInterrupt
-        print("\nReceived SIGINT, stopping.\n")
-        sys.exit(1)
+                    if command == "LOCK":
+                        resource_number = arguments[0]
+                        time_limit = arguments[1]
+                        response = stub.lock(resource_number, time_limit, ID)
 
-    print()
+                    if command == "UNLOCK":
+                        resource_number = arguments[0]
+                        response = stub.unlock(resource_number, ID)
+
+                    if command == "STATUS":
+                        option = arguments[0]
+                        resource_number = arguments[1]
+                        response = stub.status(option, resource_number)
+
+                    if command == "STATS":
+                        option = arguments[0]
+                        response = stub.stats(option)
+
+                    if command == "PRINT":
+                        request = command
+                        response = stub.print()
+
+                    # Uso da função auxiliar translate() para traduzir o conteúdo
+                    # recebido do servidor em algo legível para o utilizador
+                    response = translate(response)
+
+                    # Uso do módulo color_utils para estilizar o output
+                    response = cu.color(response, command)
+
+
+                    print("\nSent:\n    " + request)
+                    print("Received:\n    " + response)
+                
+
+            else:
+                # Emitir erro de comando desconhecido caso este não se encontre na lista
+                # de comandos suportados pelo servidor e cliente.
+
+                print(UNKNOWN_COMMAND_ERROR)
+
+        except KeyboardInterrupt as e:
+            # Lidar com KeyboardInterrupt
+            print("\nReceived SIGINT, stopping.\n")
+            stub.close()
+            sys.exit(1)
+
+except ConnectionRefusedError:
+    # Emitir erro de conexão recusada caso seja impossível contactar o servidor.
+    print(CONNECTION_REFUSED_ERROR)
+
+except Exception as e:
+    # Emitir erro geral de conexão caso hajam quaisqueres complicações no processo
+    # de envio do pedido ao servidor e receção da resposta. 
+    print(GENERAL_CONNECTION_ERROR)
+    

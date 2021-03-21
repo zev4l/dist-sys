@@ -1,5 +1,5 @@
 """
-Aplicações distribuídas - Projeto 1 - sock_utils.py
+Aplicações distribuídas - Projeto 2 - sock_utils.py
 Grupo: 77
 Números de aluno: 55373, 55371
 """
@@ -37,14 +37,13 @@ def receive_all(socket, length):
     Ensures: devolve dados obtidos através da socket.
     """
     
-    try:
-        socket.settimeout(30)
-        received_data = socket.recv(length)
-
-        return received_data
-        
-    except s.timeout:
-        print("CONNECTION TIMED OUT")
+    data = bytearray()
+    while len(data) < length:
+        packet = socket.recv(length - len(data))
+        if not packet:
+            return None
+        data += packet
+    return data
 
     
     
