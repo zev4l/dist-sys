@@ -15,6 +15,7 @@ import time
 import select as sel
 from lock_skel import skel
 import struct
+import traceback
 
 
 # código do programa principal
@@ -46,7 +47,7 @@ except Exception as e: # Se algum parâmetro se encontra incorreto, é apresenta
 try:
 
     # Inicialização da pool de recursos
-    lockpool = lp.lock_pool(RESOURCES, MAX_RESOURCE_LOCKS, MAX_RESOURCES_LOCKED)
+    skel = skel(RESOURCES, MAX_RESOURCE_LOCKS, MAX_RESOURCES_LOCKED)
     
     # Inicialização de uma socket de escuta
     sock = su.listener_socket(HOST, PORT, 1)
@@ -79,32 +80,27 @@ try:
                 # Receção da mensagem do cliente
                 # Receber primeiro a quantidade de bytes na mensagem
                 size_bytes = conn_sock.recv(4)
-                size_bytes = struct.unpack('i',size_bytes)[0]
 
-                print(size_bytes)
+
 
                 if size_bytes:
+                    
+                    size_bytes = struct.unpack('i',size_bytes)[0]
+
 
                     # E seguidamente os bytes da mensagem
                     msg_bytes = su.receive_all(conn_sock, size_bytes)
 
 
                     # Obtenção da resposta
-                    size_bytes, reply_bytes = skel.processMessage(msg_bytes)
+                    size_bytes, reply_bytes = skel.processMessage(msg_bytes = msg_bytes)
 
                     # Enviar primeiro a quantidade de bytes ao cliente
-                    conn_sock.sendall(size_bytes)
+                    sckt.sendall(size_bytes)
                     # E seguidamente, enviar os bytes da mensagem
-                    conn_sock.sendall(reply_bytes)
+                    sckt.sendall(reply_bytes)
 
-                    # Caso o comando seja "PRINT", é feita uma colorização ao estado de cada recurso
-                    if command == "PRINT":
-                        reply = cu.color(reply, "PRINT")
-                    else:
-                        reply = cu.color(reply)
 
-                    print(f'Received: \n    {msg}')
-                    print("Sent: " + "\n    " + reply + "\n")
 
                 else:
                     print(cu.colorWrite(f'Client from {addr} on port {port} has disconnected.\n', 'red'))
@@ -123,4 +119,5 @@ except KeyboardInterrupt as e:
 # Caso haja algum problema com a abertura da socket, é comunicado o problema
 except (ConnectionError, OSError):
     print(NETWORK_ERROR)
+    traceback.print_exc()
     sys.exit(1)

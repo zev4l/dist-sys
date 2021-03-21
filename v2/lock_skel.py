@@ -7,6 +7,7 @@ Números de aluno: 55373, 55371
 import pickle
 import struct
 import lock_pool as lp
+import time
 
 class skel:
 
@@ -31,6 +32,14 @@ class skel:
                 content[element] = Ellipsis
         
         return content
+
+    # Auxiliary Functions
+
+    def compact(self, content):
+        reply_bytes = pickle.dumps(content, -1)
+        size_bytes = struct.pack('i',len(reply_bytes))
+        return size_bytes, reply_bytes
+
 
     def processMessage(self, msg_bytes):
         # pedido = bytesToList(msg_bytes)
@@ -93,11 +102,19 @@ class skel:
             reply += repr(self._lockpool)
             response.append(reply)
 
-        return compact(response)
 
-    # Auxiliary Functions
 
-    def compact(self, content):
-        reply_bytes = pickle.dump(content, -1)
-        size_bytes = struct.pack('i',len(reply_bytes))
-        return size_bytes, reply_bytes
+
+
+            # # Caso o comando seja "PRINT", é feita uma colorização ao estado de cada recurso
+            # if command == "PRINT":
+            #     reply = cu.color(reply, "PRINT")
+            # else:
+            #     reply = cu.color(reply)
+
+            # print(f'Received: \n    {msg}')
+            # print("Sent: " + "\n    " + reply + "\n")
+
+        return self.compact(response)
+
+

@@ -40,6 +40,9 @@ def color(content, command = None):
     LOCKED, UNLOCKED, DISABLED, UNKNOWN RESOURCE, NOK e OK.
     Requires: content é um string. command é PRINT ou STATUS
     """
+
+
+
     if content in ('NOK', 'UNKNOWN RESOURCE'):
         content = colorWrite(content, 'red')
     elif content == 'OK':

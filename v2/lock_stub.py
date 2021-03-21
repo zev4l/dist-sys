@@ -72,6 +72,8 @@ class stub:
 
         # Receber resposta e descompactar
 
+
+
         size_bytes = self._server.recv(4)
         size_bytes = struct.unpack('i',size_bytes)[0]
         response_bytes = self._server.receive_all(size_bytes)

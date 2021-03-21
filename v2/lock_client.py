@@ -163,6 +163,8 @@ def translate(content):
 
         elif content[element] is Ellipsis:
             content[element] = "DISABLED"
+
+        element += 1
     
     return content
 
@@ -288,20 +290,26 @@ try:
                         response = stub.stats(option)
 
                     if command == "PRINT":
-                        request = command
                         response = stub.print()
+
+
+                    # print(response)
 
                     # Uso da função auxiliar translate() para traduzir o conteúdo
                     # recebido do servidor em algo legível para o utilizador
-                    response = translate(response)
-
-                    # Uso do módulo color_utils para estilizar o output
-                    response = cu.color(response, command)
+                    # response = translate(response)
 
 
-                    print("\nSent:\n    " + request)
-                    print("Received:\n    " + response)
-                
+
+                    # # Uso do módulo color_utils para estilizar o output
+                    # response = cu.color(response, command)
+
+
+                    # print("\nSent:\n    " + request)
+                    # print("Received:\n    " + response)
+
+                    print("\nSent:\n", request)
+                    print("\nReceived:\n", response)
 
             else:
                 # Emitir erro de comando desconhecido caso este não se encontre na lista
@@ -322,6 +330,5 @@ except ConnectionRefusedError:
 except Exception as e:
     # Emitir erro geral de conexão caso hajam quaisqueres complicações no processo
     # de envio do pedido ao servidor e receção da resposta.
-    traceback.print_exc() 
     print(GENERAL_CONNECTION_ERROR)
     
