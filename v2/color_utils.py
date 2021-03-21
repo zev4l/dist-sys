@@ -41,11 +41,13 @@ def color(content, command = None):
     Requires: content é um string. command é PRINT ou STATUS
     """
 
+    content = str(content)
 
+    print(content)
 
-    if content in ('NOK', 'UNKNOWN RESOURCE'):
+    if content in ('NOK', 'UNKNOWN RESOURCE', 'False', 'None'):
         content = colorWrite(content, 'red')
-    elif content == 'OK':
+    elif content in ('OK', 'True'):
         content = colorWrite(content, 'green')
 
     if command in ("PRINT", "STATUS"):
@@ -53,6 +55,9 @@ def color(content, command = None):
         # palavras para sua versão colorida.
         content = re.sub(r"\bLOCKED\b", colorWrite("LOCKED", "red"), content)
         content = re.sub(r"\bUNLOCKED\b", colorWrite("UNLOCKED", "green"), content)
+        content = re.sub(r"\bEllipsis\b", colorWrite("Ellipsis", "bk_red"), content)
         content = re.sub(r"\bDISABLED\b", colorWrite("DISABLED", "bk_red"), content)
+
+    print(content)
 
     return content

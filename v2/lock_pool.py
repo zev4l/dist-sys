@@ -59,7 +59,7 @@ class lock_pool:
             # Se o recurso ainda não atingiu o máximo de bloqueios && 
             # o total de recursos bloqueados não excedem o máximo de recursos bloqueados
             if self.status('K', resource_id) < self._max_lock_counter and self.stats('Y') < self._max_locked_resources:    
-                if self.status('R', resource_id) != "DISABLED": # Se o recurso não se encontra desabilitado
+                if self.status('R', resource_id) != Ellipsis: # Se o recurso não se encontra desabilitado
                     resource = self._locks[resource_id]
 
                     # O resultado desta função depende da conclusão da função do recurso
@@ -73,7 +73,7 @@ class lock_pool:
         Retorna OK, NOK ou UNKNOWN RESOURCE.
         """
         if resource_id >= 0 and resource_id < (len(self._locks)): # Se o recurso que pretende desbloquear existe na pool
-            if self.status('R', resource_id) != "UNLOCKED" and self.status('R', resource_id) != "DISABLED": # Se o recurso está bloqueado
+            if self.status('R', resource_id) != "UNLOCKED" and self.status('R', resource_id) != Ellipsis: # Se o recurso está bloqueado
                 resource = self._locks[resource_id]
                 
                 # O resultado desta função depende da conclusão da função do recurso
@@ -121,7 +121,7 @@ class lock_pool:
             total_disabled_resources = 0
             # Iterar a lista de recursos à procura dos que se encontram desabilitados
             for lock in self._locks:
-                if lock.status('R') == "DISABLED":
+                if lock.status('R') == Ellipsis:
                     total_disabled_resources += 1
             return total_disabled_resources
         return None
@@ -135,7 +135,7 @@ class lock_pool:
 
         # Acrescentar no output uma linha por cada recurso
         
-        return "\n    ".join([repr(lock) for lock in self._locks])
+        return "\n".join([repr(lock) for lock in self._locks])
 
 ###############################################################################
 
@@ -200,7 +200,7 @@ class resource_lock:
     def status(self, option):
         """
         Obtém o estado do recurso. Se option for R, retorna LOCKED ou UNLOCKED 
-        ou DISABLED. Se option for K, retorna <número de bloqueios feitos no 
+        ou Ellipsis. Se option for K, retorna <número de bloqueios feitos no 
         recurso>. Se option for T, retorna <epoch de tempo bloqueado>.
         """
         if option == 'R':
@@ -215,7 +215,7 @@ class resource_lock:
         Coloca o recurso como desabilitado incondicionalmente, alterando os 
         valores associados à sua disponibilidade.
         """
-        self._state = "DISABLED"
+        self._state = Ellipsis
 
     def __repr__(self):
         """

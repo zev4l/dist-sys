@@ -80,7 +80,7 @@ class stub:
 
         response = pickle.loads(response_bytes)
 
-        return response
+        return request, response
 
     # Auxiliary Functions
 

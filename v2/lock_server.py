@@ -55,7 +55,7 @@ try:
     SocketList = [sock, sys.stdin]
     halt = False
 
-    while True and not halt:
+    while not halt:
         
         R, W, X = sel.select(SocketList, [], [])
 
@@ -65,9 +65,11 @@ try:
                 (conn_sock, (addr, port)) = sock.accept()
                 
                 # (Uso do módulo color_utils por razões estéticas)
-                print(SEPARATOR)
-                print(cu.colorWrite(f'Connected to {addr} on port {port}\n', 'green'))
+                # print(SEPARATOR)
+                print(cu.colorWrite(f'Connected to {addr} on port {port}\n', 'green'), end="")
                 SocketList.append(conn_sock)
+                print(cu.colorWrite(f'{len(SocketList) - 2} user(s) connected\n', 'green'))
+
 
             elif sckt is sys.stdin:
 
@@ -81,8 +83,6 @@ try:
                 # Receber primeiro a quantidade de bytes na mensagem
                 size_bytes = sckt.recv(4)
 
-
-
                 if size_bytes:
                     
                     size_bytes = struct.unpack('i',size_bytes)[0]
@@ -93,6 +93,8 @@ try:
 
 
                     # Obtenção da resposta
+                    addr, port =  sckt.getpeername()
+                    print(f"From client at {addr}:{port}")
                     size_bytes, reply_bytes = skel.processMessage(msg_bytes = msg_bytes)
 
                     # Enviar primeiro a quantidade de bytes ao cliente
@@ -103,9 +105,11 @@ try:
 
 
                 else:
-                    print(cu.colorWrite(f'Client from {addr} on port {port} has disconnected.\n', 'red'))
+                    addr, port =  sckt.getpeername()
+                    print(cu.colorWrite(f'Client from {addr} on port {port} has disconnected\n', 'red'), end="")
                     sckt.close()
-                    SocketList.remove(conn_sock)
+                    SocketList.remove(sckt)
+                    print(cu.colorWrite(f'{len(SocketList) - 2} user(s) connected\n', 'red'))
 
         
     sock.close()

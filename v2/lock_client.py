@@ -12,6 +12,7 @@ import sys
 from time import sleep
 import net_client as nc
 from lock_stub import stub
+import getopt
 import traceback
 
 ### Variáveis Globais
@@ -19,7 +20,7 @@ import traceback
 # Mensagens de Erro
 
 serverCommands = ("LOCK", "UNLOCK", "STATUS", "STATS", "PRINT")
-PARAMETER_ERROR = "Verifique os parâmetros.\nUtilização: lock_client.py <ID> <IP/Hostname> <Porto>"
+PARAMETER_ERROR = "Verifique os parâmetros.\nUtilização: lock_client.py [-c] [-r] <ID> <IP/Hostname> <Porto>"
 UNKNOWN_COMMAND_ERROR = "UNKNOWN COMMAND, TYPE 'HELP'"
 MISSING_ARGUMENTS_ERROR = "MISSING ARGUMENTS"
 EXCESSIVE_ARGUMENTS_ERROR = "TOO MANY ARGUMENTS"
@@ -172,12 +173,18 @@ def translate(content):
 
 # Programa Principal
 
-args = sys.argv[1:]
+
 
 # Verificação e validação de argumentos iniciais
 
 try:
-    
+
+    opts, args = getopt.getopt(sys.argv[1:], "rc")
+
+    print(args)
+    print(opts)
+
+
     ID = int(args[0])
     HOST = str(args[1])
     PORT = int(args[2])
@@ -269,47 +276,48 @@ try:
                     # Quando se trata de LOCK e UNLOCK, adicionar também o ID do cliente 
                     # ao pedido.
 
-                    #TODO: Start connection before exec stub functions...
 
                     if command == "LOCK":
                         resource_number = arguments[0]
                         time_limit = arguments[1]
-                        response = stub.lock(resource_number, time_limit, ID)
+                        request, response = stub.lock(resource_number, time_limit, ID)
 
                     if command == "UNLOCK":
                         resource_number = arguments[0]
-                        response = stub.unlock(resource_number, ID)
+                        request, response = stub.unlock(resource_number, ID)
 
                     if command == "STATUS":
                         option = arguments[0]
-                        resource_number = arguments[1]
-                        response = stub.status(option, resource_number)
+                        resource_number = int(arguments[1])
+                        request, response = stub.status(option, resource_number)
 
                     if command == "STATS":
                         option = arguments[0]
-                        response = stub.stats(option)
+                        request, response = stub.stats(option)
 
                     if command == "PRINT":
-                        response = stub.print()
+                        request, response = stub.print()
 
 
-                    # print(response)
+                    # if len([opt for opt in opts if "-r" in opt]):
+                    #     # Uso da função auxiliar translate() para traduzir o conteúdo
+                    #     # recebido do servidor em algo legível para o utilizador
+                    #     response = translate(response)
 
-                    # Uso da função auxiliar translate() para traduzir o conteúdo
-                    # recebido do servidor em algo legível para o utilizador
-                    # response = translate(response)
-
-
-
-                    # # Uso do módulo color_utils para estilizar o output
-                    # response = cu.color(response, command)
+                    if len([opt for opt in opts if "-c" in opt]):
+                        # Uso do módulo color_utils para estilizar o output
+                        response = cu.color(response, command)
 
 
-                    # print("\nSent:\n    " + request)
-                    # print("Received:\n    " + response)
+                    # Impressão dos dados enviados e recebidos
+                    print("\nSent:\n" + str(request))
 
-                    print("\nSent:\n", request)
-                    print("\nReceived:\n", response)
+                    if command == "PRINT":
+                        print("\nReceived:\n[" + str(response[0])+",")
+                        print(response[1] + "\n")
+                    else:
+                        print("\nReceived:\n" + str(response) + "\n")
+                        
 
             else:
                 # Emitir erro de comando desconhecido caso este não se encontre na lista
