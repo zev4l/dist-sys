@@ -79,7 +79,7 @@ try:
 
                 # Receção da mensagem do cliente
                 # Receber primeiro a quantidade de bytes na mensagem
-                size_bytes = conn_sock.recv(4)
+                size_bytes = sckt.recv(4)
 
 
 
@@ -89,7 +89,7 @@ try:
 
 
                     # E seguidamente os bytes da mensagem
-                    msg_bytes = su.receive_all(conn_sock, size_bytes)
+                    msg_bytes = su.receive_all(sckt, size_bytes)
 
 
                     # Obtenção da resposta
