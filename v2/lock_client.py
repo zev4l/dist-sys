@@ -12,6 +12,7 @@ import sys
 from time import sleep
 import net_client as nc
 from lock_stub import stub
+import traceback
 
 ### Variáveis Globais
 
@@ -196,8 +197,6 @@ halt = False
 try:
     # Uso do stub para estabelecer uma ligação ao servidor 
     stub = stub(HOST, PORT)
-    stub.connect()
-
 
     while not halt:
         try:
@@ -322,6 +321,7 @@ except ConnectionRefusedError:
 
 except Exception as e:
     # Emitir erro geral de conexão caso hajam quaisqueres complicações no processo
-    # de envio do pedido ao servidor e receção da resposta. 
+    # de envio do pedido ao servidor e receção da resposta.
+    traceback.print_exc() 
     print(GENERAL_CONNECTION_ERROR)
     

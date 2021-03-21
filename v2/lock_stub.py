@@ -10,6 +10,7 @@ import pickle
 import net_client as nc
 import struct
 
+
 class stub:
     def __init__(self, address, port):
         self._server = nc.server(address, port)
@@ -56,10 +57,15 @@ class stub:
 
     # Auxilliary Functions
 
+    def compact(self, content):
+        request_bytes = pickle.dumps(content, -1)
+        size_bytes = struct.pack('i',len(request_bytes))
+        return size_bytes, request_bytes
+
     def _processRequest(self, request):
         # Compactar e enviar pedido
 
-        size_bytes, request_bytes = compact(request)
+        size_bytes, request_bytes = self.compact(request)
 
         self._server.send(size_bytes)
         self._server.send(request_bytes)
@@ -67,23 +73,16 @@ class stub:
         # Receber resposta e descompactar
 
         size_bytes = self._server.recv(4)
+        size_bytes = struct.unpack('i',size_bytes)[0]
         response_bytes = self._server.receive_all(size_bytes)
 
         response = pickle.loads(response_bytes)
 
         return response
 
-
-
-
-
-
     # Auxiliary Functions
 
-    def compact(self, content):
-        request_bytes = pickle.dump(content, -1)
-        size_bytes = struct.pack('i',len(request_bytes))
-        return size_bytes, request_bytes
+
 
 
     

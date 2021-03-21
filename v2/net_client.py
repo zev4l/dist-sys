@@ -21,7 +21,6 @@ class server:
         """
         self._address = address
         self._port = port
-
         self._sock = client_socket()
         
     def connect(self):

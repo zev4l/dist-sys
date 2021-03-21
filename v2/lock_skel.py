@@ -8,7 +8,7 @@ import pickle
 import struct
 import lock_pool as lp
 
-class lock_skel:
+class skel:
 
     def __init__(self, N, K, Y):
         self._lockpool = lp.lock_pool(N, K, Y)
@@ -100,4 +100,4 @@ class lock_skel:
     def compact(self, content):
         reply_bytes = pickle.dump(content, -1)
         size_bytes = struct.pack('i',len(reply_bytes))
-        return size_bytes, request_bytes
+        return size_bytes, reply_bytes

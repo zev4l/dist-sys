@@ -14,6 +14,7 @@ import lock_pool as lp
 import time
 import select as sel
 from lock_skel import skel
+import struct
 
 
 # código do programa principal
@@ -65,6 +66,7 @@ try:
                 # (Uso do módulo color_utils por razões estéticas)
                 print(SEPARATOR)
                 print(cu.colorWrite(f'Connected to {addr} on port {port}\n', 'green'))
+                SocketList.append(conn_sock)
 
             elif sckt is sys.stdin:
 
@@ -77,11 +79,15 @@ try:
                 # Receção da mensagem do cliente
                 # Receber primeiro a quantidade de bytes na mensagem
                 size_bytes = conn_sock.recv(4)
+                size_bytes = struct.unpack('i',size_bytes)[0]
+
+                print(size_bytes)
 
                 if size_bytes:
 
                     # E seguidamente os bytes da mensagem
                     msg_bytes = su.receive_all(conn_sock, size_bytes)
+
 
                     # Obtenção da resposta
                     size_bytes, reply_bytes = skel.processMessage(msg_bytes)

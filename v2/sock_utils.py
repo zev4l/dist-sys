@@ -5,6 +5,7 @@ Números de aluno: 55373, 55371
 """
 
 import socket as s
+import struct
 
 def create_tcp_server_socket(address, port, queue_size):
     """
@@ -42,7 +43,7 @@ def receive_all(socket, length):
         packet = socket.recv(length - len(data))
         if not packet:
             return None
-        data += packet
+        data.extend(packet)
     return data
 
     
