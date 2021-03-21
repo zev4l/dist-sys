@@ -70,7 +70,7 @@ try:
             # Se o comando pedido vier do input
             elif sckt is sys.stdin:
 
-                command = sys.stdin.readline()
+                command = sys.stdin.readline().strip()
                 if command.upper() == "EXIT":
                     halt = True
 
@@ -108,7 +108,6 @@ try:
                     SocketList.remove(sckt)
                     print(cu.colorWrite(f'{len(SocketList) - 2} user(s) connected\n', 'red'))
 
-        
     sock.close()
 
 # Caso o servidor seja interrompido, é fechada a socket do servidor
