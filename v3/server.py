@@ -9,26 +9,67 @@ DATABASE = "data.db"
 
 # Routes...
 
-@app.route('/utilizadores', methods = ["GET"])
+@app.route('/utilizadores', methods = ['POST', 'PUT', 'PATCH', 'DELETE'])
+@app.route('/utilizadores/<int:id_user>', methods = ["GET"])
 # Check reference server for individual functions and arguments...
-def utilizadores():
-    #### TEST LINES - PROOF OF CONCEPT
-    results = query_db("SELECT * FROM avaliacoes;")
+def utilizadores(id_user = None):
 
-    r = make_response(jsonify(results)) 
-    r.status_code = 200
-    return r
+    if request.method == "GET":
+        # Logic if GET -> READ
+        pass
 
-    ####
+    elif request.method == "POST":
+        # Logic if POST -> CREATE
+        pass
+
+    elif request.method == "DELETE":
+        # Logic if DELETE -> DELETE
+        pass
+
+    elif request.method in ["PUT", "PATCH"]:
+        # Logic if PUT/PATCH -> UPDATE
+        pass
 
 
-@app.route('/artistas', methods = ["TODO: :)"])
+@app.route('/albuns', methods = ['POST', 'PUT', 'PATCH', 'DELETE'])
+@app.route('/albuns/<int:id_album>', methods = ["GET"])
 # Check reference server for individual functions and arguments...
+def albuns(id_albuns = None):
+    
+    if request.method == "GET":
+        # Logic if GET -> READ
+        pass
+
+    elif request.method == "POST":
+        # Logic if POST -> CREATE
+        pass
+
+    elif request.method == "DELETE":
+        # Logic if DELETE -> DELETE
+        pass
+
+    elif request.method in ["PUT", "PATCH"]:
+        # Logic if PUT/PATCH -> UPDATE
+        pass
 
 
 
-@app.route('/albuns', methods = ["TODO: :)"])
+@app.route('/artistas', methods = ['POST', 'DELETE'])
+@app.route('/artistas/<int:id_artista>', methods = ["GET"])
 # Check reference server for individual functions and arguments...
+def artistas(id_artista = None):
+    
+    if request.method == "GET":
+        # Logic if GET -> READ
+        pass
+
+    elif request.method == "POST":
+        # Logic if POST -> CREATE
+        pass
+
+    elif request.method == "DELETE":
+        # Logic if DELETE -> DELETE
+        pass
 
 
 # Database related functions

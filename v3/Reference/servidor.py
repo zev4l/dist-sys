@@ -26,7 +26,6 @@ def aluno(id = None):
         # Ler dados do aluno no pedido e inserir na base de dados
         # Em caso de sucesso responder com a localização do novo recurso
 
-
         dados = request.json
 
         numero = dados["numero"]

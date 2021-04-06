@@ -1,0 +1,9 @@
+Dúvidas:
+	• Os argumentos devem ser passados por @app.route ou apenas através de JSON? 
+		• Exemplo:
+			• Na PL, PUT não aceita argumentos na @app.route (@app.route('/aluno', methods = ["PUT"])), obtendo todos os seus argumentos através de request.json
+			• Por outro lado, GET aceita um argumento (@app.route('/aluno/<int:id>', methods = ["GET"]))
+	• Os READ ALL e DELETE ALL devem estar em algum dos URLs (/utilizadores, /albuns, /artistas) ou devem estar apenas no URL base?
+		• Caso seja para usar o URL base, como criar uma route para lá? Usar apenas "/"?
+	• Como deve ser passado o nome do comando (para casos cujo nome do método HTTP difere do nome do comando)? Talvez um argumento em JSON?
+		• Exemplo: comando UPDATE/READ (talvez ver tabela em https://www.restapitutorial.com/lessons/httpmethods.html)

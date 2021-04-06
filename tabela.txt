@@ -1,0 +1,74 @@
+
+
+
+• URL -> /utilizadores
+
+	• METHODS: POST
+
+		• CREATE UTILIZADOR <nome> <senha>
+
+	• METHODS: GET
+
+		• READ UTILIZADOR <id_user>
+
+	• METHODS: DELETE
+
+		• DELETE UTILIZADORES <id_user>
+
+	• METHODS: PUT/PATCH?
+
+		• UPDATE UTILIZADOR <id_user>
+
+
+• URL -> /albuns
+
+	• METHODS: POST, PUT
+
+		• CREATE ALBUM <id_spotify>
+		• CREATE <id_user> <id_album> <avaliacao>
+
+	• METHODS: GET
+
+		• READ ALBUM <id_album>
+
+	• METHODS: DELETE
+
+		• DELETE ALBUM <id_album>
+
+	• METHODS: PUT/PATCH?
+
+		• UPDATE ALBUM <id_album>
+
+
+• URL -> /artistas
+
+	• METHODS: POST, PUT
+
+		• CREATE ARTISTA <id_spotify>
+
+	• METHODS: GET
+
+		• READ ARTISTA <id_artista>
+
+	• METHODS: DELETE
+
+		• DELETE ARTISTA <id_artista>
+
+
+•Talvez para o URL base? (ALL)
+
+	• METHODS: GET
+
+		• READ ALL < UTILIZADORES | ARTISTAS | ALBUNS >
+		• READ ALL ALBUNS_A <id_artista>
+		• READ ALL ALBUNS_U <id_user> 
+		• READ ALL ALBUNS <avaliacao>
+
+	• METHODS: DELETE
+
+		• DELETE ALL < UTILIZADORES | ARTISTAS | ALBUNS >
+		• DELETE ALL ALBUNS_A <id_artista>
+		• DELETE ALL ALBUNS_U <id_user> 
+		• DELETE ALL ALBUNS <avaliacao>
+
+
