@@ -10,12 +10,15 @@
 	• METHODS: GET
 
 		• READ UTILIZADOR <id_user>
+		• READ ALL UTILIZADORES
 
 	• METHODS: DELETE
 
 		• DELETE UTILIZADORES <id_user>
+		• DELETE ALL ALBUNS_U <id_user>
+		• DELETE ALL UTILIZADORES
 
-	• METHODS: PUT/PATCH?
+	• METHODS: PUT
 
 		• UPDATE UTILIZADOR <id_user>
 
@@ -30,14 +33,20 @@
 	• METHODS: GET
 
 		• READ ALBUM <id_album>
+		• READ ALL ALBUNS_U <id_user>
+		• READ ALL ALBUNS <avaliacao>
+		• READ ALL ALBUNS
 
 	• METHODS: DELETE
 
 		• DELETE ALBUM <id_album>
+		• DELETE ALL ALBUNS <avaliacao>
+		• DELETE ALL ALBUNS
 
-	• METHODS: PUT/PATCH?
+	• METHODS: PUT
 
 		• UPDATE ALBUM <id_album>
+
 
 
 • URL -> /artistas
@@ -49,26 +58,11 @@
 	• METHODS: GET
 
 		• READ ARTISTA <id_artista>
+		• READ ALL ALBUNS_A <id_artista>
+		• READ ALL ARTISTAS
 
 	• METHODS: DELETE
 
 		• DELETE ARTISTA <id_artista>
-
-
-•Talvez para o URL base? (ALL)
-
-	• METHODS: GET
-
-		• READ ALL < UTILIZADORES | ARTISTAS | ALBUNS >
-		• READ ALL ALBUNS_A <id_artista>
-		• READ ALL ALBUNS_U <id_user> 
-		• READ ALL ALBUNS <avaliacao>
-
-	• METHODS: DELETE
-
-		• DELETE ALL < UTILIZADORES | ARTISTAS | ALBUNS >
 		• DELETE ALL ALBUNS_A <id_artista>
-		• DELETE ALL ALBUNS_U <id_user> 
-		• DELETE ALL ALBUNS <avaliacao>
-
-
+		• DELETE ALL ARTISTAS

@@ -1,22 +1,30 @@
-from flask import Flask, g, request, make_response, jsonify
+import requests # To interact with Spotify API
 import sqlite3
 from db import connect_db
 from os.path import isfile
-import requests # To interact with Spotify API
+from flask import Flask, g, request, make_response, jsonify
 
 app = Flask(__name__)
 DATABASE = "data.db"
 
 # Routes...
 
-@app.route('/utilizadores', methods = ['POST', 'PUT', 'PATCH', 'DELETE'])
+@app.route('/utilizadores', methods = ['POST', 'PUT', 'DELETE', 'GET'])
 @app.route('/utilizadores/<int:id_user>', methods = ["GET"])
 # Check reference server for individual functions and arguments...
 def utilizadores(id_user = None):
 
+    r = make_response()
+
     if request.method == "GET":
-        # Logic if GET -> READ
-        pass
+        # Logic if GET -> READ or READ ALL
+        if id_user:
+            sql = f"SELECT id, sigla, designacao FROM avaliacoes WHERE id = {id_user}"
+            results = query_db(sql)
+            print(results)
+            r = make_response(jsonify(results))
+            # TODO: This may not always be true, sort it out later
+            r.status_code = 200
 
     elif request.method == "POST":
         # Logic if POST -> CREATE
@@ -26,18 +34,22 @@ def utilizadores(id_user = None):
         # Logic if DELETE -> DELETE
         pass
 
-    elif request.method in ["PUT", "PATCH"]:
+    elif request.method == "PUT":
         # Logic if PUT/PATCH -> UPDATE
         pass
 
+    return r
 
-@app.route('/albuns', methods = ['POST', 'PUT', 'PATCH', 'DELETE'])
+@app.route('/albuns', methods = ['POST', 'PUT', 'DELETE', 'GET'])
 @app.route('/albuns/<int:id_album>', methods = ["GET"])
 # Check reference server for individual functions and arguments...
 def albuns(id_albuns = None):
-    
+
+    r = make_response()
+
     if request.method == "GET":
-        # Logic if GET -> READ
+        # Logic if GET -> READ or READ ALL
+
         pass
 
     elif request.method == "POST":
@@ -48,19 +60,22 @@ def albuns(id_albuns = None):
         # Logic if DELETE -> DELETE
         pass
 
-    elif request.method in ["PUT", "PATCH"]:
+    elif request.method == "PUT":
         # Logic if PUT/PATCH -> UPDATE
         pass
 
+    return r
 
-
-@app.route('/artistas', methods = ['POST', 'DELETE'])
+@app.route('/artistas', methods = ['POST', 'DELETE', 'GET'])
 @app.route('/artistas/<int:id_artista>', methods = ["GET"])
 # Check reference server for individual functions and arguments...
 def artistas(id_artista = None):
-    
+
+    r = make_response()
+
     if request.method == "GET":
-        # Logic if GET -> READ
+        # Logic if GET -> READ or READ ALL
+
         pass
 
     elif request.method == "POST":
@@ -71,6 +86,7 @@ def artistas(id_artista = None):
         # Logic if DELETE -> DELETE
         pass
 
+    return r
 
 # Database related functions
 

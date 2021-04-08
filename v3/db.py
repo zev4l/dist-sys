@@ -44,26 +44,29 @@ def connect_db(dbname):
                         FOREIGN KEY(id_album) REFERENCES albuns(id)
                         FOREIGN KEY(id_avaliacao)REFERENCES avaliacoes(id)
                     );
-                    
+
                     INSERT INTO avaliacoes (id, sigla, designacao) VALUES
                         (1, "M", "Medíocre"),
                         (2, "m", "Mau"),
                         (3, "S", "Suficiente"),
                         (4, "B", "Bom"),
                         (5, "MB", "Muito Bom");
-                    """
+
+                """
 
         cursor.executescript(query)
+
         connection.commit()
+
 
     return connection
 
 
 ### TESTING LINES
 
-# if __name__ == '__main__':
-#     conn = connect_db('data.db')
-#     cursor = conn.cursor()
-#     cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-#     cursor.execute("SELECT * FROM avaliacoes;")
-#     print(cursor.fetchall())
+if __name__ == '__main__':
+    conn = connect_db('data.db')
+    cursor = conn.cursor()
+    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    cursor.execute("SELECT * FROM utilizadores;")
+    print(cursor.fetchall())
