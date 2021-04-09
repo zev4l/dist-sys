@@ -1,26 +1,23 @@
-
-
-
 • URL -> /utilizadores
 
 	• METHODS: POST
 
-		• CREATE UTILIZADOR <nome> <senha>
+		###• CREATE UTILIZADOR <nome> <senha>
 
 	• METHODS: GET
 
-		• READ UTILIZADOR <id_user>
-		• READ ALL UTILIZADORES
+		###• READ UTILIZADOR <id_user>
+		###• READ ALL UTILIZADORES
 
 	• METHODS: DELETE
 
-		• DELETE UTILIZADORES <id_user>
+		###• DELETE UTILIZADORES <id_user>
 		• DELETE ALL ALBUNS_U <id_user>
-		• DELETE ALL UTILIZADORES
+		###• DELETE ALL UTILIZADORES
 
 	• METHODS: PUT
 
-		• UPDATE UTILIZADOR <id_user>
+		###• UPDATE UTILIZADOR <id_user>
 
 
 • URL -> /albuns
