@@ -1,6 +1,9 @@
 import sqlite3
 from os.path import isfile
 
+#TODO: remove this import
+from pprint import pprint
+
 def connect_db(dbname):
     db_is_created = isfile(dbname)
     connection = sqlite3.connect(dbname)
@@ -55,6 +58,7 @@ def connect_db(dbname):
                 """
 
         cursor.executescript(query)
+        cursor.execute("PRAGMA foreign_keys = ON;")
 
         connection.commit()
 
@@ -68,10 +72,10 @@ if __name__ == '__main__':
     conn = connect_db('data.db')
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-    cursor.execute("SELECT * FROM utilizadores;")
+    # cursor.execute("SELECT * FROM utilizadores;")
     # cursor.execute("SELECT * FROM albuns;")
     # cursor.execute("SELECT * FROM artistas;")
     # cursor.execute("SELECT * FROM avaliacoes;")
-    # cursor.execute("SELECT * FROM listas_albuns;")
-    print(cursor.fetchall())
+    cursor.execute("SELECT * FROM listas_albuns;")
+    pprint(cursor.fetchall())
     cursor.close()

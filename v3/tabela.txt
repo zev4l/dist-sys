@@ -12,7 +12,6 @@
 	• METHODS: DELETE
 
 		###• DELETE UTILIZADORES <id_user>
-		• DELETE ALL ALBUNS_U <id_user>
 		###• DELETE ALL UTILIZADORES
 
 	• METHODS: PUT
@@ -22,22 +21,25 @@
 
 • URL -> /albuns
 
-	• METHODS: POST, PUT
+	• METHODS: POST
 
 		• CREATE ALBUM <id_spotify>
 		• CREATE <id_user> <id_album> <avaliacao>
 
 	• METHODS: GET
 
-		• READ ALBUM <id_album>
+		• ###READ ALBUM <id_album>
 		• READ ALL ALBUNS_U <id_user>
 		• READ ALL ALBUNS <avaliacao>
-		• READ ALL ALBUNS
+		• READ ALL ALBUNS_A <id_artista>
+		• ###READ ALL ALBUNS
 
 	• METHODS: DELETE
 
 		• DELETE ALBUM <id_album>
 		• DELETE ALL ALBUNS <avaliacao>
+		• DELETE ALL ALBUNS_A <id_artista>
+		• DELETE ALL ALBUNS_U <id_user>
 		• DELETE ALL ALBUNS
 
 	• METHODS: PUT
@@ -48,18 +50,17 @@
 
 • URL -> /artistas
 
-	• METHODS: POST, PUT
+	• METHODS: POST
 
-		• CREATE ARTISTA <id_spotify>
+		• ###CREATE ARTISTA <id_spotify>
 
 	• METHODS: GET
 
-		• READ ARTISTA <id_artista>
-		• READ ALL ALBUNS_A <id_artista>
-		• READ ALL ARTISTAS
+		• ###READ ARTISTA <id_artista>
+
+		• ###READ ALL ARTISTAS
 
 	• METHODS: DELETE
 
-		• DELETE ARTISTA <id_artista>
-		• DELETE ALL ALBUNS_A <id_artista>
-		• DELETE ALL ARTISTAS
+		• ###DELETE ARTISTA <id_artista>
+		• ###DELETE ALL ARTISTAS
