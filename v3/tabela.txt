@@ -23,13 +23,13 @@
 
 	• METHODS: POST
 
-		• CREATE ALBUM <id_spotify>
-		• CREATE <id_user> <id_album> <avaliacao>
+		• ###CREATE ALBUM <id_spotify>
+		• ###CREATE <id_user> <id_album> <avaliacao>
 
 	• METHODS: GET
 
 		• ###READ ALBUM <id_album>
-		• READ ALL ALBUNS_U <id_user>
+		• ###READ ALL ALBUNS_U <id_user>
 		• READ ALL ALBUNS <avaliacao>
 		• READ ALL ALBUNS_A <id_artista>
 		• ###READ ALL ALBUNS

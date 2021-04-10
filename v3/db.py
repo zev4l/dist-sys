@@ -58,8 +58,6 @@ def connect_db(dbname):
                 """
 
         cursor.executescript(query)
-        cursor.execute("PRAGMA foreign_keys = ON;")
-
         connection.commit()
 
 
@@ -71,11 +69,14 @@ def connect_db(dbname):
 if __name__ == '__main__':
     conn = connect_db('data.db')
     cursor = conn.cursor()
-    cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    # cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
     # cursor.execute("SELECT * FROM utilizadores;")
     # cursor.execute("SELECT * FROM albuns;")
     # cursor.execute("SELECT * FROM artistas;")
-    # cursor.execute("SELECT * FROM avaliacoes;")
-    cursor.execute("SELECT * FROM listas_albuns;")
+    cursor.execute("SELECT * FROM avaliacoes;")
+    # cursor.execute("SELECT * FROM listas_albuns;")
+    # cursor.execute(f"""SELECT *
+    #                    FROM albuns AS A, listas_albuns as LA
+    #                    WHERE A.id == LA.id_album AND LA.id_user = {id_user}""")
     pprint(cursor.fetchall())
     cursor.close()

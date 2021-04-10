@@ -13,6 +13,8 @@ DATABASE = "data.db"
 
 # TODO: In every exception include JSON description of error instead of error 500 (Slide 4 TP07)
 
+# TODO: To properly except everything, use "exception.__class__.__name__" to get exception names. Ex: if UNIQUE fails it's an IntegrityError
+
 # Routes...
 
 @app.route('/utilizadores', methods = ['POST', 'GET', 'DELETE'])
@@ -142,12 +144,24 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
     r = make_response()
 
     if request.method == "GET":
-        # Logic if GET -> READ or READ ALL
-        if id_album:
-            # TODO: Talvez join do nome do artista?
-            sql = f"SELECT id, id_spotify, nome, id_artista FROM albuns WHERE id = {id_album}"
+        if "avaliacoes" in request.path:
+            pass
+
+        elif "utilizadores" in request.path:
+            sql = f"""SELECT *
+                      FROM albuns AS A, listas_albuns as LA
+                      WHERE A.id == LA.id_album AND LA.id_user = {id_user}"""
+
+        elif "artistas" in request.path:
+            sql = f"SELECT id, id_spotify, nome, id_artista FROM albuns WHERE id_artista = {id_artista}"
+
         else:
-            sql = "SELECT id, id_spotify, nome, id_artista FROM albuns"
+            # Logic if GET -> READ or READ ALL
+            if id_album:
+                # TODO: Talvez join do nome do artista?
+                sql = f"SELECT id, id_spotify, nome, id_artista FROM albuns WHERE id = {id_album}"
+            else:
+                sql = "SELECT id, id_spotify, nome, id_artista FROM albuns"
 
         results = query_db(sql)
 
@@ -166,7 +180,7 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
         # Logic if POST -> CREATE
 
         try:
-            # If we're dealing with a new rating
+            # If we're dealing with a new rating instead of a new album
             if "avaliacoes" in request.path:
                 data = request.json
                 print(data)
@@ -190,6 +204,7 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
 
         except Exception as e:
             print(e)
+            print(e.__class__.__name__)
             r.status_code = 500
 
 
@@ -291,6 +306,8 @@ def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = connect_db(DATABASE)
+    # Foreign keys must be activated for every connection
+    db.execute("PRAGMA foreign_keys = ON;")
     return db
 
 def query_db(query, args=(), one=False):
