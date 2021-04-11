@@ -264,6 +264,7 @@ def test():
     update = {"id_album":2, "id_user":4, "id_avaliacao":5}
     r = requests.put("http://localhost:5000/albuns/avaliacoes", json=update)
     print(r.status_code)
+    print(r.json())
     print("***")
 
 def rebuild_db():
@@ -342,7 +343,7 @@ def rebuild_db():
         print(r.status_code)
         print("***")
 rebuild_db()
-test()
+# test()
 
 # rebuild_db()
 # album = {"id_spotify":"78bpIziExqiI9qztvNFlQu"}

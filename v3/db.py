@@ -1,7 +1,11 @@
+"""
+Aplicações distribuídas - Projeto 3 - db.py
+Grupo: 77
+Números de aluno: 55373, 55371
+"""
+
 import sqlite3
 from os.path import isfile
-
-#TODO: remove this import
 from pprint import pprint
 
 def connect_db(dbname):
@@ -64,21 +68,25 @@ def connect_db(dbname):
     return connection
 
 
+def printDB():
+        conn = connect_db('data.db')
+        cursor = conn.cursor()
+
+        insts = ["SELECT * FROM utilizadores;",
+                "SELECT * FROM albuns;",
+                "SELECT * FROM artistas;",
+                "SELECT * FROM listas_albuns;",
+                "SELECT * FROM avaliacoes;"]
+
+        for inst in insts:
+            print("\n" + str(inst.split()[3]).upper())
+            cursor.execute(inst)
+
+            pprint(cursor.fetchall())
+
+        cursor.close()
+
 ### TESTING LINES
 
 if __name__ == '__main__':
-    conn = connect_db('data.db')
-    cursor = conn.cursor()
-    # cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-    insts = ["SELECT * FROM utilizadores;",
-            "SELECT * FROM albuns;",
-            "SELECT * FROM artistas;",
-            "SELECT * FROM listas_albuns;",
-            "SELECT * FROM avaliacoes;"]
-
-    for inst in insts:
-        print("\n" + str(inst.split()[3]).upper())
-        cursor.execute(inst)
-
-        pprint(cursor.fetchall())
-    cursor.close()
+    printDB()

@@ -1,5 +1,5 @@
 """
-Aplicações distribuídas - Projeto 2 - lock_client.py
+Aplicações distribuídas - Projeto 3 - client.py
 Grupo: 77
 Números de aluno: 55373, 55371
 """
@@ -10,7 +10,6 @@ import sys
 import getopt
 import requests
 import os
-
 import color_utils as cu
 from pprint import pprint
 
@@ -30,7 +29,7 @@ CONNECTION_REFUSED_ERROR = cu.colorWrite("CONNECTION REFUSED", 'red')
 
 HELP_MESSAGE = f"""{cu.colorWrite('Comandos Disponíveis', 'green')}:
   {cu.colorWrite('Servidor', 'blue')}:
-    -CREATE 
+    -CREATE
         -UTILIZADOR <nome> <senha>
         -ALBUM <id_spotify>
         -ARTISTA <id_spotify>

@@ -1,3 +1,9 @@
+"""
+Aplicações distribuídas - Projeto 3 - server.py
+Grupo: 77
+Números de aluno: 55373, 55371
+"""
+
 import requests # To interact with Spotify API
 import sqlite3
 from db import connect_db
@@ -10,24 +16,15 @@ CLIENT_SECRET = "6460e1db9bd24d3398044e3c96d2a513"
 INTERNAL_SERVER_ERROR = (500,
                          "Something went wrong while processing your request. Double-check your arguments or try again later.")
 
-# TODO: remove these imports
-import traceback as t
-from pprint import pprint
-
 app = Flask(__name__)
 DATABASE = "data.db"
-
-# TODO: In every exception include JSON description of error instead of error 500 (Slide 4 TP07)
-
-# TODO: To properly except everything, use "exception.__class__.__name__" to get exception names. Ex: if UNIQUE fails it's an IntegrityError
-
-# TODO: Revise all status codes
-
-# TODO: Document functions
 
 # Using Spotify API
 
 def query_spotify(id, type = "artist", keys="all"):
+    """
+    Query Spotify REST API for data regarding artist or album.
+    """
 
     # Obtaining access token
     AUTH_URL = 'https://accounts.spotify.com/api/token'
@@ -91,10 +88,14 @@ def query_spotify(id, type = "artist", keys="all"):
 
 # ROUTES
 
+# Utilizadores Route:
 @app.route('/utilizadores', methods = ['POST', 'GET', 'DELETE'])
 @app.route('/utilizadores/<int:id_user>', methods = ["GET", "DELETE", "PUT"])
-# Check reference server for individual functions and arguments...
+
 def utilizadores(id_user = None):
+    """
+    Handles requests for route /utilizadores regarding methods POST, GET, DELETE and PUT.
+    """
 
     r = make_response()
 
@@ -131,25 +132,30 @@ def utilizadores(id_user = None):
 
             data = request.json
 
+            # Getting JSON data
             name = data["nome"]
             password = data["senha"]
 
+            # Executing SQL instructions - Inserting new user
             sql = f"INSERT INTO utilizadores (nome, senha) VALUES ('{name}', '{password}')"
-
             query_db(sql)
 
             # Status code 201: Successfully Created
             r.status_code = 201
 
         except sqlite3.IntegrityError as e:
+            # Catching IntegrityError, in case request user has already been created
             if "UNIQUE" in e.__str__():
                 r = make_response(error_json(409, "This request violates policy. This resource has already been registered"))
+                # Status code 409: Conflict
                 r.status_code = 409
 
         except KeyError:
+            # Catching KeyError if client fails to provide all required JSON arguments.
             r = make_response(error_json(400, "Wrong syntax. Make sure to include all JSON arguments."))
 
         except:
+            # Catching all other exceptions.
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
 
@@ -160,19 +166,24 @@ def utilizadores(id_user = None):
 
         try:
             if id_user:
-
+                # If a user has been specified for deletion.
                 # Deleting corresponding rows.
                 sql = f"DELETE FROM utilizadores WHERE id = {id_user}"
 
             else:
+                # If no user has been specified (delete every user).
                 # Deleting corresponding rows.
                 sql = f"DELETE FROM utilizadores"
 
+            # Executing SQL instructions
             query_db(sql)
 
+            # Status code 204: OK but No Content to be delivered
             r.status_code = 204
 
         except:
+            # Catching all exceptions.
+
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
 
@@ -180,6 +191,8 @@ def utilizadores(id_user = None):
     elif request.method == "PUT":
         # Logic if PUT/PATCH -> UPDATE
         try:
+
+            # Getting JSON arguments.
             data = request.json
             password = data["senha"]
 
@@ -187,61 +200,80 @@ def utilizadores(id_user = None):
             sql = f"UPDATE utilizadores SET senha = '{password}' WHERE id = {id_user};"
             query_db(sql)
 
+            # Status code 204: OK but No Content to be delivered
             r.status_code = 204
 
         except KeyError:
+            # Catching KeyError if client fails to provide all required JSON arguments.
             r = make_response(error_json(400, "Wrong syntax. Make sure to include all JSON arguments."))
 
         except:
+            # Catching all other exceptions.
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
 
     return r
 
+# Albuns Route:
 @app.route('/albuns', methods = ['POST', 'DELETE', 'GET'])
 @app.route('/albuns/<int:id_album>', methods = ['GET', 'DELETE'])
 @app.route('/albuns/avaliacoes', methods = ['POST', 'GET', 'PUT'])
 @app.route('/albuns/avaliacoes/<int:id_avaliacao>', methods = ['GET', 'DELETE'])
 @app.route('/albuns/utilizadores/<int:id_user>', methods = ['GET', 'DELETE'])
 @app.route('/albuns/artistas/<int:id_artista>', methods = ['GET', 'DELETE'])
-# Check reference server for individual functions and arguments...
-def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = None):
 
+def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = None):
+    """
+    Handles requests for route /albuns and all subroutes (albuns and avaliacoes).
+    Supports POST, GET, DELETE and PUT
+    """
     r = make_response()
 
     if request.method == "GET":
         try:
             if "avaliacoes" in request.path:
+                # If subroute involves ratings
                 if id_avaliacao:
+                    # Getting all albums rated with specified rating
                     sql = f"""SELECT DISTINCT A.id, A.id_spotify, A.nome, A.id_artista
                               FROM albuns AS A, listas_albuns as LA
                               WHERE A.id == LA.id_album AND LA.id_avaliacao = {id_avaliacao}"""
                 else:
+                    # Getting all ratings if no rating is specified
                     sql = f"SELECT * FROM listas_albuns"
 
+            # If subroute involves users
             elif "utilizadores" in request.path:
+
+                # Getting all albuns rated by specified user
                 sql = f"""SELECT DISTINCT A.id, A.id_spotify, A.nome, A.id_artista
                           FROM albuns AS A, listas_albuns as LA
                           WHERE A.id == LA.id_album AND LA.id_user = {id_user}"""
 
+            # If subroute involves artists
             elif "artistas" in request.path:
+                # Getting all albuns by specified artist
                 sql = f"SELECT id, id_spotify, nome, id_artista FROM albuns WHERE id_artista = {id_artista}"
 
+            # If it's the main route (/albuns)
             else:
-                # Logic if GET -> READ or READ ALL
                 if id_album:
+                    # Getting specified album
                     sql = f"SELECT id, id_spotify, nome, id_artista FROM albuns WHERE id = {id_album}"
                 else:
+                    # Getting all albums if id_album isn't specified
                     sql = "SELECT id, id_spotify, nome, id_artista FROM albuns"
 
+            # Querying database with previously decided criteria
             results = query_db(sql)
 
+            # Processing results: Adding Spotify data to local data about albums
             processed_results = []
 
+            # (Unless the current request is about ratings (listas_albuns))
             if not ("avaliacoes" in request.path and not id_avaliacao):
                 for album in results:
                     spotify_details = query_spotify(album["id_spotify"], type="album")
-                    print(spotify_details)
 
                     # Merging both dictionaries and appending to results
                     processed_results.append({**album, **spotify_details})
@@ -254,22 +286,27 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
                 r.status_code = 200
 
             else:
+                # Sending 404 error message if no albums fitting criteria are found
                 if id_avaliacao:
+                    # If criteria is albums rated with rating (id_avaliacao)
                     description = f"No albums with rating {id_avaliacao} were found."
                 elif id_user:
+                    # If criteria is albums rated by user (id_user)
                     description = f"No albums rated by user {id_user} were found."
                 elif id_artista:
+                    # If criteria is albums by artist (id_artista)
                     description = f"No albums by artist {id_artista} were found."
                 elif id_album:
+                    # If criteria is album with id id_album
                     description = f"Album {id_album} could not be found."
 
                 r = make_response(error_json(404, description))
                 r.status_code = 404
 
-        except Exception as e:
+        except:
+            # Catching all other exceptions
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
-            print(e)
 
 
     elif request.method == "POST":
@@ -280,17 +317,22 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
             if "avaliacoes" in request.path:
                 data = request.json
 
+                # Getting JSON arguments
                 id_user = data["id_user"]
                 id_album = data["id_album"]
                 id_avaliacao = data["id_avaliacao"]
 
+                # Inserting new rating into database
                 sql = f"INSERT INTO listas_albuns (id_user, id_album, id_avaliacao) VALUES ('{id_user}', '{id_album}', {id_avaliacao})"
 
+            # If we're dealing with a new album
             else:
                 data = request.json
+
+                # Getting JSON arguments
                 id_spotify = data["id_spotify"]
 
-                # Obtaining info about album and its authot
+                # Obtaining info about album and its author
                 name, info_spotify_artista = query_spotify(id_spotify, type="album", keys=["name", "artists"])
 
                 # Selecting the artist's spotify ID
@@ -298,8 +340,6 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
 
                 # Checking if, internally, there is any registered artist with such a spotify ID
                 search_artist = f"SELECT id FROM artistas WHERE id_spotify = '{id_spotify_artista}'"
-
-
                 id_artista = query_db(search_artist)
 
                 # If there is, continue with album insertion
@@ -312,37 +352,45 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
 
                 sql = f'INSERT INTO albuns (id_spotify, nome, id_artista) VALUES ("{id_spotify}", "{name}", {id_artista})'
 
+            # Executing previously decided instructions
             query_db(sql)
 
+            # Status code 201: Created Successfully
             r.status_code = 201
 
         except KeyError:
+            # Catching KeyError if client fails to provide all required JSON arguments.
             r = make_response(error_json(400, "Wrong syntax. Make sure to include all JSON arguments."))
 
+        # Handling database IntegrityError exceptions
         except sqlite3.IntegrityError as e:
+            # Catching FOREIGN KEY errors and reporting to client.
             if "FOREIGN KEY" in e.__str__():
                 r = make_response(error_json(400, "This request violates policy. Please check if the mentioned artist/album/user is already registered."))
                 r.status_code = 400
 
+            # Catching UNIQUE errors and reporting to client.
             if "UNIQUE" in e.__str__():
                 r = make_response(error_json(409, "This request violates policy. This resource has already been registered"))
+                # Status code 409: Conflict
                 r.status_code = 409
 
         except KeyError:
+            # Catching KeyError if client fails to provide all required JSON arguments
             r = make_response(error_json(400, "Wrong syntax. Make sure to include all JSON arguments."))
 
-        except Exception as e:
+        except:
+            # Catching all other exceptions
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
-            print(e)
-            print(e.__class__.__name__)
 
 
     elif request.method == "DELETE":
         # Logic if DELETE -> DELETE
         try:
+            # If subroute involves avaliacoes
             if "avaliacoes" in request.path:
-                # Checking for matching albums
+                # Checking for albums rated with rating id_avaliacao
                 sql_count = f"""SELECT A.id
                                 FROM albuns AS A, listas_albuns AS LA
                                 WHERE A.id = LA.id_album AND LA.id_avaliacao = {id_avaliacao}"""
@@ -352,9 +400,10 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
                           FROM albuns AS A
                           WHERE A.id in ({sql_count})"""
 
+            # If subroute involves utilizadores
             elif "utilizadores" in request.path:
 
-                # Checking for matching rows.
+                # Checking for albums rated by user id_user
                 sql_count = f"""SELECT A.id
                                 FROM albuns AS A, listas_albuns AS LA
                                 WHERE A.id = LA.id_album AND LA.id_user = {id_user}"""
@@ -364,18 +413,21 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
                           FROM albuns AS A
                           WHERE A.id in ({sql_count})"""
 
+            # If subroute involves artistas
             elif "artistas" in request.path:
 
-                # Deleting corresponding rows
+                # Deleting albums by artista id_artista
                 sql = f"DELETE FROM albuns WHERE id_artista = {id_artista}"
 
+            # If it's the main route (/album)
             else:
-                # Logic if GET -> READ or READ ALL
+                # If an album is specified
                 if id_album:
 
-                    # Deleting corresponding rows
+                    # Deleting specific album
                     sql = f"DELETE FROM albuns WHERE id = {id_album}"
 
+                # If no albums are specified
                 else:
 
                     # Deleting all rows
@@ -383,13 +435,13 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
 
             query_db(sql)
 
+            # Status code 204: OK but No Content to be delivered.
             r.status_code = 204
 
-        except Exception as e:
+        except:
+            # Catching all exceptions
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
-            print(e)
-            print(e.__class__.__name__)
 
 
 
@@ -397,6 +449,8 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
         # Logic if PUT/PATCH -> UPDATE
         try:
             data = request.json
+
+            # Getting JSON arguments
             id_album = data["id_album"]
             id_user = data["id_user"]
             id_avaliacao = data["id_avaliacao"]
@@ -407,7 +461,7 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
                       WHERE id_album = {id_album} AND id_user = {id_user};"""
             results = query_db(sql)
 
-            # Updating corresponding rows.
+            # Updating corresponding ratings.
             sql = f"""UPDATE listas_albuns
                       SET id_avaliacao = {id_avaliacao}
                       WHERE id_user = {id_user} AND id_album = {id_album};"""
@@ -417,39 +471,46 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
             if len(results) > 0:
                 r.status_code = 204
             else:
-                # If no rows were updated, set status code 400.
+                # If no ratings were updated, meaning the specified rating does not exist deliver status code 404
                 r = make_response(error_json(404, f"The mentioned user ({id_user}) has not reviewed album {id_album}."))
                 r.status_code = 404
 
         except KeyError:
+            # Catching KeyError if client fails to provide all required JSON arguments
             r = make_response(error_json(400, "Wrong syntax. Make sure to include all JSON arguments."))
 
         except:
+            # Catching all other exceptions
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
 
     return r
 
+
+# Artistas Route:
 @app.route('/artistas', methods = ['POST', 'DELETE', 'GET'])
 @app.route('/artistas/<int:id_artista>', methods = ["GET", "DELETE"])
-# Check reference server for individual functions and arguments...
 def artistas(id_artista = None):
 
     if request.method == "GET":
         try:
             # Logic if GET -> READ or READ ALL
 
+            # If id_artista is specified
             if id_artista:
                 sql = f"SELECT id, id_spotify, nome FROM artistas WHERE id = {id_artista}"
+            # If no artist is specified, deliver all artists
             else:
                 sql = "SELECT id, id_spotify, nome FROM artistas"
 
+            # Executing previously decided instructions
             results = query_db(sql)
 
+            # Processing results: Adding Spotify data to local data about artists
             processed_results = []
 
             for artist in results:
-                # Querying Spotify for data about artist
+
                 spotify_details = query_spotify(artist["id_spotify"], type="artist")
 
                 # Merging both dictionaries (local data and spotify data) and appending to results
@@ -467,6 +528,7 @@ def artistas(id_artista = None):
                 r.status_code = 404
 
         except:
+            # Catching all exceptions
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
 
@@ -480,25 +542,34 @@ def artistas(id_artista = None):
 
             data = request.json
 
+            # Getting JSON arguments
+
             id_spotify = data["id_spotify"]
+
+            # Inserting new artist
 
             insert_artist(id_spotify)
 
             r.status_code = 201
 
         except KeyError:
+            # Catching KeyError if client fails to provide all required JSON arguments
             r = make_response(error_json(400, "Wrong syntax. Make sure to include all JSON arguments."))
 
+
         except sqlite3.IntegrityError as e:
+            # Handling database IntegrityError exceptions
+
+            # Catching UNIQUE errors and reporting to client.
             if "UNIQUE" in e.__str__():
                 r = make_response(error_json(409, "This request violates policy. This artist has already been registered"))
+                # Status code 409: Conflict
                 r.status_code = 409
 
-        except Exception as e:
+        except:
+            # Catching all other exceptions
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
-            print(e)
-            print(e.__class__.__name__)
 
 
     elif request.method == "DELETE":
@@ -507,19 +578,23 @@ def artistas(id_artista = None):
         r = make_response()
 
         try:
+            # If id_artista is specified
             if id_artista:
                 # Deleting corresponding rows.
                 sql = f"DELETE FROM artistas WHERE id = {id_artista}"
 
+            # If not, delete all artists
             else:
                 # Deleting corresponding rows.
                 sql = f"DELETE FROM artistas"
 
+            # Executing previously decided instructions
             query_db(sql)
 
             r.status_code = 204
 
         except:
+            # Catching all exceptions
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
 
@@ -528,6 +603,10 @@ def artistas(id_artista = None):
 # Helper functions
 
 def insert_artist(id_spotify):
+    """
+    Wrapper for artist insertion. Used when album author isn't registed in database
+    and when new new artist is created.
+    """
 
     name = query_spotify(id_spotify, type="artist", keys=["name"])[0]
 
@@ -537,6 +616,9 @@ def insert_artist(id_spotify):
 
 
 def error_json(code, description):
+    """
+    Creation of JSONified message describing error in detail.
+    """
 
     URLs = {500:"https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",
             404:"https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
@@ -556,14 +638,21 @@ def error_json(code, description):
 # Database related functions
 
 def get_db():
+    """
+    Getting access to database
+    """
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = connect_db(DATABASE)
-    # Foreign s must be activated for every connection
+
+    # Foreign key support must be activated for every connection
     db.execute("PRAGMA foreign_keys = ON;")
     return db
 
 def query_db(query, args=(), one=False):
+    """
+    Executing queries and instructions
+    """
     conn = get_db()
     conn.row_factory = sqlite3.Row
     cursor = conn.execute(query, args)
@@ -579,9 +668,12 @@ def query_db(query, args=(), one=False):
 
 @app.teardown_appcontext
 def close_connection(exception):
+    """
+    Safely closing connection when closing server.
+    """
     db = getattr(g, '_database', None)
     if db is not None:
         db.close()
 
 if __name__ == '__main__':
-    app.run(debug = True)
+    app.run(debug = False)

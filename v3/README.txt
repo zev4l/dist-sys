@@ -11,10 +11,12 @@ Funcionalidades:
 
 • Utilização: server
 
-• Construído com a framework Flask e o motor de base de dados SQL sqlite.
+• Construído com a framework Flask e o motor de base de dados SQL SQLite.
 
 • Integração com o API do Spotify.
 	- Informação extra sobre o artista/álbum providenciada pelo Spotify.
+
+• Erros descritos detalhadamente ao cliente.
 
 • Código detalhadamente documentado.
 
