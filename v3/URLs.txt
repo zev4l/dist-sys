@@ -18,6 +18,7 @@ Albuns:
   READ ALL ALBUNS_A <id_artista> -> GET /albuns/artistas/<id_artista>
   READ ALL ALBUNS_U <id_user> -> GET /albuns/utilizadores/<id_user>
   READ ALL ALBUNS <avaliacao> -> GET /albuns/avaliacoes/<id_avaliacao>
+  READ ALL AVALIACOES -> GET /albuns/avaliacoes
   DELETE ALBUM <id_album> -> DELETE /albuns/<id_album>
   DELETE ALL ALBUNS -> DELETE /albuns
   DELETE ALL ALBUNS <avaliacao> -> DELETE /albuns/avaliacoes/<id_avaliacao>

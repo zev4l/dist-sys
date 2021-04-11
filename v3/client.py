@@ -14,8 +14,8 @@ from os import system
 from time import sleep
 
 # import net_client as nc
-# import color_utils as cu
-
+import color_utils as cu
+from pprint import pprint
 
 ### Variáveis Globais
 
@@ -28,22 +28,21 @@ MISSING_ARGUMENTS_ERROR = "MISSING ARGUMENTS"
 EXCESSIVE_ARGUMENTS_ERROR = "TOO MANY ARGUMENTS"
 INVALID_ARGUMENTS_ERROR = "INVALID ARGUMENTS"
 
+GENERAL_CONNECTION_ERROR = cu.colorWrite("CONNECTION ERROR", 'red')
+CONNECTION_REFUSED_ERROR = cu.colorWrite("CONNECTION REFUSED", 'red')
 
-# GENERAL_CONNECTION_ERROR = cu.colorWrite("CONNECTION ERROR", 'red')
-# CONNECTION_REFUSED_ERROR = cu.colorWrite("CONNECTION REFUSED", 'red')
+HELP_MESSAGE = f"""{cu.colorWrite('Comandos Disponíveis', 'green')}:
+  {cu.colorWrite('Servidor', 'blue')}:
+    -LOCK <número do recurso> <limite de tempo>
+    -UNLOCK <número do recurso>
+    -STATUS R/K <número do recurso>
+    -STATS Y/N/D
+    -PRINT
 
-# HELP_MESSAGE = f"""{cu.colorWrite('Comandos Disponíveis', 'green')}:
-#   {cu.colorWrite('Servidor', 'blue')}:
-#     -LOCK <número do recurso> <limite de tempo>
-#     -UNLOCK <número do recurso>
-#     -STATUS R/K <número do recurso>
-#     -STATS Y/N/D
-#     -PRINT
-#
-#   {cu.colorWrite('Cliente', 'blue')}:
-#     -SLEEP <limite de tempo>
-#     -HELP
-#     -EXIT"""
+  {cu.colorWrite('Cliente', 'blue')}:
+    -SLEEP <limite de tempo>
+    -HELP
+    -EXIT"""
 
 
 def argumentChecker(userInput):
@@ -55,8 +54,6 @@ def argumentChecker(userInput):
     Ensures: Devolve um booleano representando a validade dos argumentos introduzidos
     respetivamente ao comando invocado.
     """
-
-    return True  # kekw, POC
 
     # O número de argumentos tem que excluir o nome do comando
     command = userInput[0]
@@ -72,11 +69,11 @@ def argumentChecker(userInput):
                            "ALBUM": 2
                            }
 
-    argLimitsReadDeleteAll = {"UTILIZADORES": 1,
-                              "ARTISTAS": 1,
-                              "ALBUNS_A": 2,
-                              "ALBUNS_U": 2,
-                              "ALBUNS": 2}
+    argLimitsReadDeleteAll = {"UTILIZADORES": 2,
+                              "ARTISTAS": 2,
+                              "ALBUNS_A": 3,
+                              "ALBUNS_U": 3,
+                              "ALBUNS": 3}
 
     # if len(arguments) < argLimits[command]:
     #     # Emitir erro de argumentos insuficientes e retornar False caso
@@ -147,37 +144,42 @@ def argumentChecker(userInput):
     elif command == "READ" or command == "DELETE":
         try:
             option = arguments[0]
+            sub_option = arguments[1]
             if option != "ALL":
                 max_arg = argLimitsReadDelete.get(option)
             else:
-                max_arg = argLimitsReadDeleteAll.get(option)
-            if len(arguments) < max_arg:
-                # Emitir erro de argumentos insuficientes e retornar False caso
-                # a quantidade de argumentos presentes nos dados introduzidos pelo
-                # utilizador for menor que a quantidadede argumentos esperada para
-                # o comando em causa.
+                max_arg = argLimitsReadDeleteAll.get(sub_option)
+            if sub_option != "ALBUNS":
+                if len(arguments) < max_arg:
+                    # Emitir erro de argumentos insuficientes e retornar False caso
+                    # a quantidade de argumentos presentes nos dados introduzidos pelo
+                    # utilizador for menor que a quantidadede argumentos esperada para
+                    # o comando em causa.
 
-                print(MISSING_ARGUMENTS_ERROR)
-                return False
+                    print(MISSING_ARGUMENTS_ERROR)
+                    return False
 
-            elif len(arguments) > max_arg:
-                # Emitir erro de argumentos em demasia e retornar False caso a
-                # quantidade de argumentos presentes nos dados introduzidos pelo
-                # utilizador não for maior que a quantidade de argumentos esperada
-                # para o comando em causa.
+                elif len(arguments) > max_arg:
+                    # Emitir erro de argumentos em demasia e retornar False caso a
+                    # quantidade de argumentos presentes nos dados introduzidos pelo
+                    # utilizador não for maior que a quantidade de argumentos esperada
+                    # para o comando em causa.
 
-                print(EXCESSIVE_ARGUMENTS_ERROR)
-                return False
+                    print(EXCESSIVE_ARGUMENTS_ERROR)
+                    return False
+            else:
+                if len(arguments) > 3:
+                    print(EXCESSIVE_ARGUMENTS_ERROR)
+                    return False
 
             if option in ("UTILIZADOR", "ARTISTA", "ALBUM"):
-                int(arguments[1])
+                id = int(arguments[1])
             elif option == "ALL":
                 sub_option = arguments[1]
-                if sub_option in ("UTILIZADORES", "ARTISTAS", "ALBUNS_A", "ALBUNS_U"):
-                    int(arguments[2])
-                elif sub_option == "ALBUNS":
-                    if len(arguments) == 3:
-                        int(arguments[2])
+                if sub_option in ("ALBUNS_A", "ALBUNS_U"):
+                    id = int(arguments[2])
+                elif sub_option in ("ALBUNS", "AVALIACOES", "ARTISTAS", "UTILIZADORES"):
+                    return True
                 else:
                     return False
             else:
@@ -217,79 +219,18 @@ def argumentChecker(userInput):
             return False
 
 
-    # if command == "LOCK":
-    #     # Caso o comando seja LOCK, deve-se verificar o tipo de dados
-    #     # e integridade dos argumentos fornecidos. (int, int)
-    #     try:
-    #         int(arguments[0])
-    #         int(arguments[1])
-    #         return True
-    #
-    #     except:
-    #         print(INVALID_ARGUMENTS_ERROR)
-    #         return False
-    #
-    # if command == "UNLOCK":
-    #     # Caso o comando seja UNLOCK, deve-se verificar o tipo de dados
-    #     # e integridade dos argumentos fornecidos. (int)
-    #     try:
-    #         int(arguments[0])
-    #         return True
-    #
-    #     except:
-    #         print(INVALID_ARGUMENTS_ERROR)
-    #         return False
-    #
-    # if command == "STATUS":
-    #     # Caso o comando seja STATUS, deve-se verificar o tipo de dados
-    #     # e integridade dos argumentos fornecidos. (("R", "K"), int)
-    #
-    #     try:
-    #         if arguments[0] not in ("R", "K"):
-    #             raise INVALID_ARGUMENTS_ERROR
-    #
-    #         int(arguments[1])
-    #         return True
-    #
-    #     except:
-    #         print(INVALID_ARGUMENTS_ERROR)
-    #         return False
-    #
-    # if command == "STATS":
-    #     # Caso o comando seja STATS, deve-se verificar
-    #     # e integridade dos argumentos fornecidos. (("Y", "N", "D"))
-    #
-    #     try:
-    #         if arguments[0] not in ("Y", "N", "D"):
-    #             raise INVALID_ARGUMENTS_ERROR
-    #
-    #         return True
-    #
-    #     except:
-    #         print(INVALID_ARGUMENTS_ERROR)
-    #         return False
-    #
-    # if command == "PRINT":
-    #     # Caso o comando seja PRINT, dão-se automaticamente como válidos
-    #     # os dados introduzidos pelo utilizador pois este comando não requer
-    #     # argumentos.
-    #
-    #     return True
-
-
 # Programa Principal
 
 # Verificação e validação de argumentos iniciais
-
+#
 try:
 
-    opts, args = getopt.getopt(sys.argv[1:])
+    opts, args = getopt.getopt(sys.argv[1:], "rc")
 
-    ID = int(args[0])
-    HOST = str(args[1])
-    PORT = int(args[2])
+    HOST = str(args[0])
+    PORT = int(args[1])
 
-    if len(args) != 3:
+    if len(args) != 2:
         raise PARAMETER_ERROR
 
 except Exception as e:
@@ -303,36 +244,44 @@ except Exception as e:
 halt = False
 
 try:
-    # Uso do stub para estabelecer uma ligação ao servidor
-    stub = stub(HOST, PORT)
+    avaliacoes = {"M": 1,
+                  "m": 2,
+                  "S": 3,
+                  "B": 4,
+                  "MB": 5}
+
+    queryUrlReadDelete = {"UTILIZADOR": f"http://{HOST}:{PORT}/utilizadores/",
+                          "ALBUM": f"http://{HOST}:{PORT}/albuns/",
+                          "ARTISTA": f"http://{HOST}:{PORT}/artistas/"}
+
+    queryUrlReadDeleteAll = {"UTILIZADORES": f"http://{HOST}:{PORT}/utilizadores",
+                             "ALBUNS": f"http://{HOST}:{PORT}/albuns",
+                             "ARTISTAS": f"http://{HOST}:{PORT}/artistas",
+                             "ALBUNS_A": f"http://{HOST}:{PORT}/albuns/artistas/",
+                             "ALBUNS_U": f"http://{HOST}:{PORT}/albuns/utilizadores/",
+                             "AVALIACOES": f"http://{HOST}:{PORT}/albuns/avaliacoes"}
 
     while not halt:
         try:
 
-            # Inicialização da variável que irá albergar o request enviado para
-            # o servidor
-            request = ""
-
             # Processamento dos dados introduzidos pelo utilizador
-
             if not len([opt for opt in opts if "-c" in opt]):
-                handle = f"client_{ID} ▶ {cu.colorWrite(HOST, 'green')}: "
+                handle = f"client ▶ {cu.colorWrite(HOST, 'green')}: "
             else:
-                handle = f"client_{ID} ▶ {HOST}: "
+                handle = f"client ▶ {HOST}:"
 
-            userInput = input(handle).upper().split()
+            userInput = input(handle).split()
 
             # Passar ao próximo ciclo caso o utilizador não introduza nada
             if not userInput:
                 continue
 
-            command = userInput[0]
+            command = userInput[0].upper()
             arguments = userInput[1:]
 
             if command == "EXIT":
                 # Sair do ciclo caso o utilizador invoque o comando EXIT
                 halt = True
-                stub.close()
                 continue
 
             elif command == "HELP":
@@ -365,7 +314,6 @@ try:
                 # Limpar o histórico da consola caso o utilizador invoque o comando SLEEP.
                 system("clear")
 
-
             elif command in serverCommands:
 
                 if argumentChecker(userInput):
@@ -379,18 +327,33 @@ try:
                     # ao pedido.
 
                     if command == "CREATE":
-                        option = arguments[0]
+                        option = arguments[0].upper()
                         if option == "UTILIZADOR":
-                            name = arguments[1]
-                            password = arguments[2]
+                            utilizador = {"nome": arguments[1],
+                                          "senha": arguments[2]}
                             # efetuar request
+                            r = requests.post(f"http://{HOST}:{PORT}/utilizadores", json=utilizador)
+                            print(r.status_code)
+                            print("***")
                         elif option == "ARTISTA" or option == "ALBUM":
-                            id_spotify = arguments[1]
+                            query = {"id_spotify": arguments[1]}
                             # efetuar request
+                            if option == "ARTISTA":
+                                r = requests.post(f"http://{HOST}:{PORT}/artistas", json=query)
+                                print(r.status_code)
+                                print("***")
+                            else:
+                                r = requests.post(f"http://{HOST}:{PORT}/albuns", json=query)
+                                print(r.status_code)
+                                print("***")
+
                         else:
-                            id_user = int(arguments[0])
-                            id_album = int(arguments[1])
-                            avaliacao = arguments[2]
+                            avaliacao = {"id_user": int(arguments[0]),
+                                         "id_album": int(arguments[1]),
+                                         "id_avaliacao": avaliacoes.get(arguments[2])}
+                            r = requests.post(f"http://{HOST}:{PORT}/albuns/avaliacoes", json=avaliacao)
+                            print(r.status_code)
+                            print("***")
                             # efetuar request
 
                     elif command == "READ" or command == "DELETE":
@@ -398,33 +361,80 @@ try:
                         if option in ("UTILIZADOR", "ARTISTA", "ALBUM"):
                             id = arguments[1]
                             # efetuar request
+                            if command == "READ":
+                                r = requests.get(queryUrlReadDelete.get(option) + id)
+                                print(r.status_code)
+                                pprint(r.json())
+                                print("***")
+                            else:
+                                r = requests.delete(queryUrlReadDelete.get(option) + id)
+                                print(r.status_code)
+                                print("***")
                         else:
                             sub_option = arguments[1]
-                            if sub_option in ("UTILIZADORES", "ARTISTAS"):
-                                pass # efetuar request
+                            if sub_option in ("UTILIZADORES", "ARTISTAS", "AVALIACOES"):
+                                if command == "READ":
+                                    r = requests.get(queryUrlReadDeleteAll.get(sub_option))
+                                    print(r.status_code)
+                                    pprint(r.json())
+                                    print("***")
+                                else:
+                                    r = requests.delete(queryUrlReadDeleteAll.get(sub_option))
+                                    print(r.status_code)
+                                    print("***")
                             elif sub_option == "ALBUNS":
                                 if len(arguments) == 3:
-                                    avaliacao = arguments[3]
-                                    # efetuar request
+                                    avaliacao = avaliacoes.get(arguments[2])
+                                    if command == "READ":
+                                        r = requests.get(queryUrlReadDeleteAll.get(sub_option) + f"/avaliacoes/{avaliacao}")
+                                        print(r.status_code)
+                                        pprint(r.json())
+                                        print("***")
+                                    else:
+                                        r = requests.delete(queryUrlReadDeleteAll.get(sub_option + f"/avaliacoes/{avaliacao}"))
+                                        print(r.status_code)
+                                        print("***")
                                 else:
-                                    pass # efetuar request
+                                    if command == "READ":
+                                        r = requests.get(queryUrlReadDeleteAll.get(sub_option))
+                                        print(r.status_code)
+                                        pprint(r.json())
+                                        print("***")
+                                    else:
+                                        r = requests.delete(queryUrlReadDeleteAll.get(sub_option))
+                                        print(r.status_code)
+                                        print("***")
                             else:
-                                id = arguments[3]
+                                id = arguments[2]
+                                if command == "READ":
+                                    r = requests.get(queryUrlReadDeleteAll.get(sub_option) + id)
+                                    print(r.status_code)
+                                    pprint(r.json())
+                                    print("***")
+                                else:
+                                    r = requests.delete(queryUrlReadDeleteAll.get(sub_option) + id)
+                                    print(r.status_code)
+                                    print("***")
                                 # efetuar request
 
-                    else: # UPDATE
+                    else:  # UPDATE
                         option = arguments[0]
                         if option == "ALBUM":
-                            id_album = int(arguments[1])
-                            avaliacao = arguments[2]
-                            id_user = int(arguments[3])
+                            avaliacao = {"id_album": int(arguments[1]),
+                                         "id_avaliacao": avaliacoes.get(arguments[2]),
+                                         "id_user": int(arguments[3])}
                             # efetuar request
-                        else: # UTILIZADOR
+                            r = requests.put(f"http://{HOST}:{PORT}/albuns/avaliacoes", json=avaliacao)
+                            print(r.status_code)
+                            print("***")
+
+                        else:  # UTILIZADOR
                             id_user = int(arguments[1])
-                            password = arguments[2]
+                            utilizador = {"senha": arguments[2]}
                             # efetuar request
-
-
+                            r = requests.put(f"http://{HOST}:{PORT}/utilizadores/{id_user}", json=utilizador)
+                            print(r.status_code)
+                            print("***")
 
                     # if len([opt for opt in opts if "-r" in opt]):
                     #     # Uso da função auxiliar translate() para traduzir o conteúdo
@@ -436,14 +446,13 @@ try:
                     #     response = cu.color(response, command)
 
                     # Impressão dos dados enviados e recebidos
-                    print("\nSent:\n" + str(request))
-
-                    if command == "PRINT":
-                        print("\nReceived:\n[" + str(response[0]) + ",")
-                        print(response[1] + "]\n")
-                    else:
-                        print("\nReceived:\n" + "[" + ", ".join([str(elem) for elem in response]) + "]" + "\n")
-
+                    # print("\nSent:\n" + str(request))
+                    #
+                    # if command == "PRINT":
+                    #     print("\nReceived:\n[" + str(response[0]) + ",")
+                    #     print(response[1] + "]\n")
+                    # else:
+                    #     print("\nReceived:\n" + "[" + ", ".join([str(elem) for elem in response]) + "]" + "\n")
 
             else:
                 # Emitir erro de comando desconhecido caso este não se encontre na lista
@@ -454,7 +463,6 @@ try:
         except KeyboardInterrupt as e:
             # Lidar com KeyboardInterrupt
             print("\nReceived SIGINT, stopping.\n")
-            stub.close()
             sys.exit(1)
 
 except ConnectionRefusedError:
