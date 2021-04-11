@@ -22,7 +22,7 @@ def connect_db(dbname):
                         id_spotify            TEXT,
                         nome                  TEXT,
                         id_artista            INTEGER,
-                        FOREIGN KEY(id_artista) REFERENCES artistas(id)
+                        FOREIGN KEY(id_artista) REFERENCES artistas(id) ON DELETE CASCADE
                     );
 
                     CREATE TABLE artistas (
@@ -43,9 +43,9 @@ def connect_db(dbname):
                         id_album              INTEGER,
                         id_avaliacao          INTEGER,
                         PRIMARY KEY (id_user, id_album),
-                        FOREIGN KEY(id_user) REFERENCES utilizadores(id),
-                        FOREIGN KEY(id_album) REFERENCES albuns(id)
-                        FOREIGN KEY(id_avaliacao)REFERENCES avaliacoes(id)
+                        FOREIGN KEY(id_user) REFERENCES utilizadores(id) ON DELETE CASCADE,
+                        FOREIGN KEY(id_album) REFERENCES albuns(id) ON DELETE CASCADE,
+                        FOREIGN KEY(id_avaliacao) REFERENCES avaliacoes(id) ON DELETE CASCADE
                     );
 
                     INSERT INTO avaliacoes (id, sigla, designacao) VALUES
@@ -72,11 +72,11 @@ if __name__ == '__main__':
     # cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
     # cursor.execute("SELECT * FROM utilizadores;")
     # cursor.execute("SELECT * FROM albuns;")
-    # cursor.execute("SELECT * FROM artistas;")
-    cursor.execute("SELECT * FROM avaliacoes;")
+    cursor.execute("SELECT * FROM artistas;")
+    # cursor.execute("SELECT * FROM avaliacoes;")
     # cursor.execute("SELECT * FROM listas_albuns;")
     # cursor.execute(f"""SELECT *
     #                    FROM albuns AS A, listas_albuns as LA
-    #                    WHERE A.id == LA.id_album AND LA.id_user = {id_user}""")
+    #                    WHERE A.id == LA.id_album AND LA.id_avaliacao = {id_avaliacao}""")
     pprint(cursor.fetchall())
     cursor.close()

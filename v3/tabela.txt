@@ -29,22 +29,24 @@
 	• METHODS: GET
 
 		• ###READ ALBUM <id_album>
-		• ###READ ALL ALBUNS_U <id_user>
-		• READ ALL ALBUNS <avaliacao>
-		• READ ALL ALBUNS_A <id_artista>
 		• ###READ ALL ALBUNS
+		• ###READ ALL ALBUNS_A <id_artista>
+		• ###READ ALL ALBUNS_U <id_user>
+		• ###READ ALL ALBUNS <avaliacao>
+
 
 	• METHODS: DELETE
 
-		• DELETE ALBUM <id_album>
-		• DELETE ALL ALBUNS <avaliacao>
-		• DELETE ALL ALBUNS_A <id_artista>
-		• DELETE ALL ALBUNS_U <id_user>
-		• DELETE ALL ALBUNS
+		• ###DELETE ALBUM <id_album>
+		• ###DELETE ALL ALBUNS
+		• ###DELETE ALL ALBUNS <avaliacao>
+		• ###DELETE ALL ALBUNS_A <id_artista>
+		• ###DELETE ALL ALBUNS_U <id_user>
+
 
 	• METHODS: PUT
 
-		• UPDATE ALBUM <id_album>
+		• ###UPDATE ALBUM <id_album> <avaliacao> <id_user>
 
 
 

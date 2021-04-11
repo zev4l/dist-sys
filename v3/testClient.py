@@ -84,22 +84,44 @@ import json
 # TESTES ALBUNS
 # INSERT
 # ###
-albuns = [{"id_spotify":"78bpIziExqiI9qztvNFlQu", "nome":"AM", "id_artista":1},
-          {"id_spotify":"3lajefIuUk4SfzqVBSJy8p", "nome":"Good For You", "id_artista":2}]
-for album in albuns:
-    r = requests.post('http://localhost:5000/albuns', json = album)
-    print(r.status_code)
-    print("***")
+# albuns = [{"id_spotify":"78bpIziExqiI9qztvNFlQu", "nome":"AM", "id_artista":1},
+#           {"id_spotify":"3lajefIuUk4SfzqVBSJy8p", "nome":"Good For You", "id_artista":2},
+#           {"id_spotify":"493HYe7N5pleudEZRyhE7R", "nome":"All I Want Is You", "id_artista":4},
+#           {"id_spotify":"3mH6qwIy9crq0I9YQbOuDf", "nome":"Blonde", "id_artista":5}]
+# for album in albuns:
+#     r = requests.post('http://localhost:5000/albuns', json = album)
+#     print(r.status_code)
+#     print("***")
+album = {"id_spotify":"5Y04ylQjDWsawOUJXzY4YO", "nome":"The Powers That B", "id_artista":2}
+r = requests.post('http://localhost:5000/albuns', json = album)
+print(r.status_code)
+print("***")
+# #
+# #
+# # # # AVALIACOES
+# aval = [{"id_user":1, "id_album":1, "id_avaliacao":5},
+#         {"id_user":2, "id_album":4, "id_avaliacao":4},
+#         {"id_user":3, "id_album":1, "id_avaliacao":3},
+#         {"id_user":4, "id_album":2, "id_avaliacao":2},
+#         {"id_user":5, "id_album":3, "id_avaliacao":4}]
+#
+# for elem in aval:
+#     r = requests.post('http://localhost:5000/albuns/avaliacoes', json = elem)
+#     print(r.status_code)
+#     print("***")
 
+# DELETE
+# r = requests.delete("http://localhost:5000/albuns/1")
+# print(r.status_code)
+# print("***")
 
-# # AVALIACOES
-aval = [{"id_user":1, "id_album":1, "id_avaliacao":5},
-        {"id_user":2, "id_album":2, "id_avaliacao":4},
-        {"id_user":3, "id_album":1, "id_avaliacao":3},
-        {"id_user":4, "id_album":2, "id_avaliacao":2},
-        {"id_user":3, "id_album":2, "id_avaliacao":4}]
+# r = requests.delete("http://localhost:5000/albuns/avaliacoes/4")
+# print(r.status_code)
+# print("***")
 
-for elem in aval:
-    r = requests.post('http://localhost:5000/albuns/avaliacoes', json = elem)
-    print(r.status_code)
-    print("***")
+# UPDATE
+
+# update = {"id_album":2, "id_user":4, "id_avaliacao":5}
+# r = requests.put("http://localhost:5000/albuns/avaliacoes", json=update)
+# print(r.status_code)
+# print("***")
