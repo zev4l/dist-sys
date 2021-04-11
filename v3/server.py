@@ -162,7 +162,7 @@ def utilizadores(id_user = None):
 
             query_db(sql)
 
-            r.status_code = 200
+            r.status_code = 204
 
         except:
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
@@ -179,7 +179,7 @@ def utilizadores(id_user = None):
             sql = f"UPDATE utilizadores SET senha = '{password}' WHERE id = {id_user};"
             query_db(sql)
 
-            r.status_code = 200
+            r.status_code = 204
 
         except:
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
@@ -241,7 +241,6 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
             # Setting status codes based on query results
             if len(results) > 0 or not any((id_avaliacao, id_user, id_artista, id_album)):
                 r.status_code = 200
-                print("aaa")
 
             else:
                 if id_avaliacao:
@@ -306,9 +305,20 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
 
             r.status_code = 201
 
+        except sqlite3.IntegrityError as e:
+            if "FOREIGN KEY" in e.__str__():
+                r = make_response(error_json(400, "This request violates policy. Please check the mentioned artist/album/user is already registered."))
+                r.status_code = 400
+
+            if "UNIQUE" in e.__str__():
+                r = make_response(error_json(400, "This request violates policy. Please check the mentioned artist/album/user is already registered."))
+                r.status_code = 409
+
         except:
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
+            print(e)
+            print(e.__class__.__name__)
 
 
     elif request.method == "DELETE":
@@ -327,10 +337,15 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
 
             elif "utilizadores" in request.path:
 
+                # Checking for matching rows.
+                sql_count = f"""SELECT A.id
+                                FROM albuns AS A, listas_albuns AS LA
+                                WHERE A.id = LA.id_album AND LA.id_user = {id_user}"""
+
                 # Deleting corresponding rows
                 sql = f"""DELETE
-                          FROM albuns AS A, listas_albuns AS LA
-                          WHERE A.id = LA.id_album AND LA.id_user = {id_user}"""
+                          FROM albuns AS A
+                          WHERE A.id in ({sql_count})"""
 
             elif "artistas" in request.path:
 
@@ -351,11 +366,14 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
 
             query_db(sql)
 
-            r.status_code = 200
+            r.status_code = 204
 
-        except:
+        except Exception as e:
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
+            print(e)
+            print(e.__class__.__name__)
+
 
 
     elif request.method == "PUT":
@@ -373,7 +391,7 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
 
             query_db(sql)
 
-            r.status_code = 200
+            r.status_code = 204
 
         except:
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
@@ -447,6 +465,8 @@ def artistas(id_artista = None):
     elif request.method == "DELETE":
         # Logic if DELETE -> DELETE
 
+        r = make_response()
+
         try:
             if id_artista:
                 # Deleting corresponding rows.
@@ -458,7 +478,7 @@ def artistas(id_artista = None):
 
             query_db(sql)
 
-            r.status_code = 200
+            r.status_code = 204
 
         except:
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
@@ -480,10 +500,14 @@ def insert_artist(id_spotify):
 def error_json(code, description):
 
     URLs = {500:"https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",
-            404:"https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
-            }
+            404:"https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404",
+            400:"https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/400",
+            409:"https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/409"}
+
     titles = {500:"Internal Server Error",
-              404:"Resource Not Found"}
+              404:"Resource Not Found",
+              400:"Bad Request",
+              409:"Conflict"}
 
     return jsonify({"describedBy":URLs[code],
                     "httpStatus":code,

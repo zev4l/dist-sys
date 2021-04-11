@@ -73,6 +73,7 @@ if __name__ == '__main__':
     insts = ["SELECT * FROM utilizadores;",
             "SELECT * FROM albuns;",
             "SELECT * FROM artistas;",
+            "SELECT * FROM listas_albuns;",
             "SELECT * FROM avaliacoes;"]
 
     for inst in insts:
