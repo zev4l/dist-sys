@@ -94,7 +94,7 @@ def argumentChecker(userInput):
                               "ALBUNS": 3}
 
     # A partir desta linha:
-    #    Verifica-se a validade de cada argumento para cada comando (na lista acima
+    #    Verifica-se a validade de cada argumento para cada comando (nas listas acima
     #    definida), devolvendo False e emitindo um erro de argumentos inválidos caso
     #    os tipos de dados dos argumentos introduzidos pelo utilizador não corresponderem
     #    com os tipos de dados esperados para os argumentos do comando em causa.
@@ -136,8 +136,7 @@ def argumentChecker(userInput):
 
             return True
 
-
-        except:
+        except:  # Se o programa cai numa exceção, significa que os argumentos dados são inválidos
             print(INVALID_ARGUMENTS_ERROR)
             return False
 
@@ -187,7 +186,7 @@ def argumentChecker(userInput):
 
             return True
 
-        except:
+        except:  # Se o programa cai numa exceção, significa que os argumentos dados são inválidos
             print(INVALID_ARGUMENTS_ERROR)
             return False
 
@@ -215,7 +214,7 @@ def argumentChecker(userInput):
                 return True
             print(INVALID_ARGUMENTS_ERROR)
             return False
-        except:
+        except:  # Se o programa cai numa exceção, significa que os argumentos dados são inválidos
             print(INVALID_ARGUMENTS_ERROR)
             return False
 
@@ -226,7 +225,7 @@ def argumentChecker(userInput):
 #
 try:
 
-    opts, args = getopt.getopt(sys.argv[1:], "rc")
+    opts, args = getopt.getopt(sys.argv[1:], "c")
 
     HOST = str(args[0])
     PORT = int(args[1])
@@ -290,7 +289,7 @@ try:
 
 
             elif command == "CLEAR":
-                # Limpar o histórico da consola caso o utilizador invoque o comando SLEEP.
+                # Limpar o histórico da consola.
                 if os.name == "nt":
                     os.system("cls")
                 else:
