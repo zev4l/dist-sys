@@ -11,6 +11,11 @@ Funcionalidades:
 
 • Utilização: server
 
+• Construído com a framework Flask e o motor de base de dados SQL sqlite.
+
+• Integração com o API do Spotify.
+	- Informação extra sobre o artista/álbum providenciada pelo Spotify.
+
 • Código detalhadamente documentado.
 
 [client.py]
@@ -23,6 +28,8 @@ Funcionalidades:
 • Extra comandos adicionados: 
 	- HELP, cujo apresenta os comandos disponíveis e a sua respetiva sintaxe
 	- CLEAR, cujo limpa o histórico de comandos
+
+• Comunicação com o servidor através do módulo requests.
 
 • Interface de pedido de comandos informa ao utilizador qual o host ao qual está a enviar comandos.
 
