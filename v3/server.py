@@ -146,6 +146,9 @@ def utilizadores(id_user = None):
                 r = make_response(error_json(409, "This request violates policy. This resource has already been registered"))
                 r.status_code = 409
 
+        except KeyError:
+            r = make_response(error_json(400, "Wrong syntax. Make sure to include all JSON arguments."))
+
         except:
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
@@ -185,6 +188,9 @@ def utilizadores(id_user = None):
             query_db(sql)
 
             r.status_code = 204
+
+        except KeyError:
+            r = make_response(error_json(400, "Wrong syntax. Make sure to include all JSON arguments."))
 
         except:
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
@@ -310,6 +316,9 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
 
             r.status_code = 201
 
+        except KeyError:
+            r = make_response(error_json(400, "Wrong syntax. Make sure to include all JSON arguments."))
+
         except sqlite3.IntegrityError as e:
             if "FOREIGN KEY" in e.__str__():
                 r = make_response(error_json(400, "This request violates policy. Please check if the mentioned artist/album/user is already registered."))
@@ -319,7 +328,10 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
                 r = make_response(error_json(409, "This request violates policy. This resource has already been registered"))
                 r.status_code = 409
 
-        except:
+        except KeyError:
+            r = make_response(error_json(400, "Wrong syntax. Make sure to include all JSON arguments."))
+
+        except Exception as e:
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
             print(e)
@@ -395,8 +407,6 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
                       WHERE id_album = {id_album} AND id_user = {id_user};"""
             results = query_db(sql)
 
-            print(results)
-
             # Updating corresponding rows.
             sql = f"""UPDATE listas_albuns
                       SET id_avaliacao = {id_avaliacao}
@@ -410,6 +420,9 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
                 # If no rows were updated, set status code 400.
                 r = make_response(error_json(404, f"The mentioned user ({id_user}) has not reviewed album {id_album}."))
                 r.status_code = 404
+
+        except KeyError:
+            r = make_response(error_json(400, "Wrong syntax. Make sure to include all JSON arguments."))
 
         except:
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
@@ -472,6 +485,9 @@ def artistas(id_artista = None):
             insert_artist(id_spotify)
 
             r.status_code = 201
+
+        except KeyError:
+            r = make_response(error_json(400, "Wrong syntax. Make sure to include all JSON arguments."))
 
         except sqlite3.IntegrityError as e:
             if "UNIQUE" in e.__str__():

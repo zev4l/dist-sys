@@ -341,8 +341,8 @@ def rebuild_db():
         r = requests.post('http://localhost:5000/albuns/avaliacoes', json = elem)
         print(r.status_code)
         print("***")
-# rebuild_db()
-# test()
+rebuild_db()
+test()
 
 # rebuild_db()
 # album = {"id_spotify":"78bpIziExqiI9qztvNFlQu"}
@@ -351,7 +351,7 @@ def rebuild_db():
 # print(r.json())
 # print("***")
 
-# review = {"id_user":5, "id_album":3, "id_avaliacao":4}
+# review = {"id_user":5, "id_album":3}
 # r = requests.post("http://localhost:5000/albuns/avaliacoes", json=review)
 # print(r.status_code)
 # print(r.json())
