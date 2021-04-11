@@ -1,0 +1,34 @@
+URLs to access for each command
+
+Utilizadores:
+
+  CREATE UTILIZADOR <nome> <senha> -> POST /utilizadores json = "nome" e "senha"
+  READ UTILIZADOR <id_user> -> GET /utilizadores/<id_user>
+  READ ALL UTILIZADORES -> GET /utilizadores
+  DELETE UTILIZADORES <id_user> -> DELETE /utilizadores/<id_user>
+  DELETE ALL UTILIZADORES -> DELETE /utilizadores
+  UPDATE UTILIZADOR <id_user> <senha> -> PUT /utilizadores/<id_user> json = "senha"
+
+Albuns:
+
+  CREATE ALBUM <id_spotify> -> POST /albuns json = "id_spotify"
+  CREATE <id_user> <id_album> <avaliacao> -> POST /albuns/avaliacoes json = "id_user", "id_album", "id_avaliacao"
+  READ ALBUM <id_album> -> GET /albuns/<id_album>
+  READ ALL ALBUNS -> GET /albuns
+  READ ALL ALBUNS_A <id_artista> -> GET /albuns/artistas/<id_artista>
+  READ ALL ALBUNS_U <id_user> -> GET /albuns/utilizadores/<id_user>
+  READ ALL ALBUNS <avaliacao> -> GET /albuns/avaliacoes/<id_avaliacao>
+  DELETE ALBUM <id_album> -> DELETE /albuns/<id_album>
+  DELETE ALL ALBUNS -> DELETE /albuns
+  DELETE ALL ALBUNS <avaliacao> -> DELETE /albuns/avaliacoes/<id_avaliacao>
+  DELETE ALL ALBUNS_A <id_artista> -> DELETE /albuns/artistas/<id_artista>
+  DELETE ALL ALBUNS_U <id_user> -> DELETE /albuns/utilizadores/<id_user>
+  UPDATE ALBUM <id_album> <avaliacao> <id_user> -> PUT -> /albuns/avaliacoes json = "id_album", "id_avaliacao", "id_user"
+
+Artistas:
+
+  CREATE ARTISTA <id_spotify> -> POST /artistas json = "id_spotify"
+  READ ARTISTA <id_artista> -> GET /artista/<id_artista>
+  READ ALL ARTISTAS -> GET /artistas
+  DELETE ARTISTA <id_artista> -> DELETE /artistas/<id_artista>
+  DELETE ALL ARTISTAS -> DELETE /artistas

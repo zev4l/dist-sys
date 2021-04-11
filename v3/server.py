@@ -22,7 +22,7 @@ DATABASE = "data.db"
 
 # Using Spotify API
 
-def query_spotify(id, type = "artist"):
+def query_spotify(id, type = "artist", keys="all"):
     # Obtaining access token
 
     AUTH_URL = 'https://accounts.spotify.com/api/token'
@@ -39,37 +39,50 @@ def query_spotify(id, type = "artist"):
     'Authorization': 'Bearer {token}'.format(token=access_token)}
 
     if type == "artist":
+
         r = requests.get(BASE_URL + 'artists/' + id, headers=headers)
 
         data = r.json()
 
-        url = data["external_urls"]["spotify"]
-        followers = data["followers"]["total"]
-        genres = data["genres"]
-        popularity = data["popularity"]
+        if keys == "all":
 
-        return {"url_spotify":url,
-                "seguidores":followers,
-                "generos":genres,
-                "popularidade":popularity}
+            url = data["external_urls"]["spotify"]
+            followers = data["followers"]["total"]
+            genres = data["genres"]
+            popularity = data["popularity"]
+
+            return {"url_spotify":url,
+                    "seguidores":followers,
+                    "generos":genres,
+                    "popularidade":popularity}
+        else:
+
+            return [data[key] for key in keys]
 
     elif type == "album":
+
         r = requests.get(BASE_URL + 'albums/' + id, headers=headers)
 
         data = r.json()
 
-        cover = data["images"][0]["url"]
-        url = data["external_urls"]["spotify"]
-        label = data["label"]
-        tracks = data["total_tracks"]
-        release_date = data["release_date"]
-        artists = [artist["name"] for artist in data["artists"]]
+        if keys == "all":
 
-        return {"capa":cover,
-                "url_spotify":url,
-                "quantidade_faixas":tracks,
-                "data_lancamento":release_date,
-                "artistas":artists}
+
+            cover = data["images"][0]["url"]
+            url = data["external_urls"]["spotify"]
+            label = data["label"]
+            tracks = data["total_tracks"]
+            release_date = data["release_date"]
+            artists = [artist["name"] for artist in data["artists"]]
+
+            return {"capa":cover,
+                    "url_spotify":url,
+                    "quantidade_faixas":tracks,
+                    "data_lancamento":release_date,
+                    "artistas":artists}
+        else:
+
+            return [data[key] for key in keys]
 
 # Routes...
 
@@ -264,10 +277,28 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
             else:
                 data = request.json
                 id_spotify = data["id_spotify"]
-                name = data["nome"]
-                id_artista = data["id_artista"]
 
-                sql = f"INSERT INTO albuns (id_spotify, nome, id_artista) VALUES ('{id_spotify}', '{name}', {id_artista})"
+                # Obter informações sobre o album. Nome e info. sobre o artista
+                name, info_spotify_artista = query_spotify(id_spotify, type="album", keys=["name", "artists"])
+
+                # Selecionar o ID do spotify do artista
+                id_spotify_artista = info_spotify_artista[0]["id"]
+
+                # Verificar se, internamente, existe algum artista com esse id_spotify
+                search_artist = f"SELECT id FROM artistas WHERE id_spotify = '{id_spotify_artista}'"
+
+
+                id_artista = query_db(search_artist)
+
+                # Caso exista, continuar com a inserção do album.
+                # Caso não exista, inseri-lo na base de dados e obter o seu ID interno.
+                if not id_artista:
+                    insert_artist(id_spotify_artista)
+                    id_artista = query_db(search_artist)[0].get("id")
+                else:
+                    id_artista = id_artista[0]["id"]
+
+                sql = f'INSERT INTO albuns (id_spotify, nome, id_artista) VALUES ("{id_spotify}", "{name}", {id_artista})'
 
             query_db(sql)
 
@@ -426,16 +457,15 @@ def artistas(id_artista = None):
             data = request.json
 
             id_spotify = data["id_spotify"]
-            name = data["nome"]
 
-            sql = f"INSERT INTO artistas (id_spotify, nome) VALUES ('{id_spotify}', '{name}')"
-
-            query_db(sql)
+            insert_artist(id_spotify)
 
             r.status_code = 200
 
-        except:
+        except Exception as e:
             r.status_code = 500
+            print(e.__class__.__name__)
+            print(e)
 
 
     elif request.method == "DELETE":
@@ -472,13 +502,28 @@ def artistas(id_artista = None):
 
     return r
 
+# Helper functions
+
+def insert_artist(id_spotify):
+
+    name = query_spotify(id_spotify, type="artist", keys=["name"])[0]
+
+    sql = f"INSERT INTO artistas (id_spotify, nome) VALUES ('{id_spotify}', '{name}')"
+
+    query_db(sql)
+
+def error_json(title, description):
+    message = {"title":title,
+               "description":description}
+
+
 # Database related functions
 
 def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = connect_db(DATABASE)
-    # Foreign keys must be activated for every connection
+    # Foreign s must be activated for every connection
     db.execute("PRAGMA foreign_keys = ON;")
     return db
 
@@ -504,37 +549,3 @@ def close_connection(exception):
 
 if __name__ == '__main__':
     app.run(debug = True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#a

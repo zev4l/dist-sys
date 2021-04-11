@@ -19,7 +19,7 @@ def connect_db(dbname):
 
                     CREATE TABLE albuns (
                         id                    INTEGER PRIMARY KEY,
-                        id_spotify            TEXT,
+                        id_spotify            TEXT UNIQUE,
                         nome                  TEXT,
                         id_artista            INTEGER,
                         FOREIGN KEY(id_artista) REFERENCES artistas(id) ON DELETE CASCADE
@@ -27,7 +27,7 @@ def connect_db(dbname):
 
                     CREATE TABLE artistas (
                         id                     INTEGER PRIMARY KEY,
-                        id_spotify             TEXT,
+                        id_spotify             TEXT UNIQUE,
                         nome                   TEXT
                     );
 
@@ -70,13 +70,14 @@ if __name__ == '__main__':
     conn = connect_db('data.db')
     cursor = conn.cursor()
     # cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-    # cursor.execute("SELECT * FROM utilizadores;")
-    # cursor.execute("SELECT * FROM albuns;")
-    cursor.execute("SELECT * FROM artistas;")
-    # cursor.execute("SELECT * FROM avaliacoes;")
-    # cursor.execute("SELECT * FROM listas_albuns;")
-    # cursor.execute(f"""SELECT *
-    #                    FROM albuns AS A, listas_albuns as LA
-    #                    WHERE A.id == LA.id_album AND LA.id_avaliacao = {id_avaliacao}""")
-    pprint(cursor.fetchall())
+    insts = ["SELECT * FROM utilizadores;",
+            "SELECT * FROM albuns;",
+            "SELECT * FROM artistas;",
+            "SELECT * FROM avaliacoes;"]
+
+    for inst in insts:
+        print("\n" + str(inst.split()[3]).upper())
+        cursor.execute(inst)
+
+        pprint(cursor.fetchall())
     cursor.close()

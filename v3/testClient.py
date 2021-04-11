@@ -148,12 +148,12 @@ def rebuild_db():
         print(r.status_code)
         print('***')
 
-    artistas =[{"id_spotify":"7Ln80lUS6He07XvHI8qqHH", "nome":"Arctic Monkeys"},
-               {"id_spotify":"3Gm5F95VdRxW3mqCn8RPBJ", "nome":"Aminé"},
-               {"id_spotify":"699OTQXzgjhIYAHMy9RyPD", "nome":"Playboy Carti"},
-               {"id_spotify":"0WgyCbru4tXnMsbTmX4mFw", "nome":"Atlanta Rythm Section"},
-               {"id_spotify":"4tZwfgrHOc3mvqYlEYSvVi", "nome":"Daft Punk"},
-               {"id_spotify":"0ndWKGm6Kl92RMNKdEsco1", "nome":"Exodia"}]
+    artistas =[{"id_spotify":"7Ln80lUS6He07XvHI8qqHH"},
+               {"id_spotify":"3Gm5F95VdRxW3mqCn8RPBJ"},
+               {"id_spotify":"699OTQXzgjhIYAHMy9RyPD"},
+               {"id_spotify":"0WgyCbru4tXnMsbTmX4mFw"},
+               {"id_spotify":"4tZwfgrHOc3mvqYlEYSvVi"},
+               {"id_spotify":"0ndWKGm6Kl92RMNKdEsco1"}]
 
     for artista in artistas:
         r = requests.post("http://localhost:5000/artistas", json = artista)
@@ -161,20 +161,15 @@ def rebuild_db():
         print("***")
 
 
-    albuns = [{"id_spotify":"78bpIziExqiI9qztvNFlQu", "nome":"AM", "id_artista":1},
-              {"id_spotify":"3lajefIuUk4SfzqVBSJy8p", "nome":"Good For You", "id_artista":2},
-              {"id_spotify":"493HYe7N5pleudEZRyhE7R", "nome":"All I Want Is You", "id_artista":4},
-              {"id_spotify":"3mH6qwIy9crq0I9YQbOuDf", "nome":"Blonde", "id_artista":5}]
+    albuns = [{"id_spotify":"78bpIziExqiI9qztvNFlQu"},
+              {"id_spotify":"3lajefIuUk4SfzqVBSJy8p"},
+              {"id_spotify":"493HYe7N5pleudEZRyhE7R"},
+              {"id_spotify":"3mH6qwIy9crq0I9YQbOuDf"}]
 
     for album in albuns:
         r = requests.post('http://localhost:5000/albuns', json = album)
         print(r.status_code)
         print("***")
-
-    album = {"id_spotify":"5Y04ylQjDWsawOUJXzY4YO", "nome":"The Powers That B", "id_artista":2}
-    r = requests.post('http://localhost:5000/albuns', json = album)
-    print(r.status_code)
-    print("***")
 
     aval = [{"id_user":1, "id_album":1, "id_avaliacao":5},
             {"id_user":2, "id_album":4, "id_avaliacao":4},
@@ -186,3 +181,8 @@ def rebuild_db():
         r = requests.post('http://localhost:5000/albuns/avaliacoes', json = elem)
         print(r.status_code)
         print("***")
+
+album = {"id_spotify":"2VBcztE58pBKjIDS5oEgFh"}
+r = requests.post("http://localhost:5000/albuns", json=album)
+print(r.status_code)
+print("***")
