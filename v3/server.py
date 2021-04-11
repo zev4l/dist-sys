@@ -141,6 +141,11 @@ def utilizadores(id_user = None):
             # Status code 201: Successfully Created
             r.status_code = 201
 
+        except sqlite3.IntegrityError as e:
+            if "UNIQUE" in e.__str__():
+                r = make_response(error_json(409, "This request violates policy. This resource has already been registered"))
+                r.status_code = 409
+
         except:
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
@@ -307,11 +312,11 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
 
         except sqlite3.IntegrityError as e:
             if "FOREIGN KEY" in e.__str__():
-                r = make_response(error_json(400, "This request violates policy. Please check the mentioned artist/album/user is already registered."))
+                r = make_response(error_json(400, "This request violates policy. Please check if the mentioned artist/album/user is already registered."))
                 r.status_code = 400
 
             if "UNIQUE" in e.__str__():
-                r = make_response(error_json(400, "This request violates policy. Please check the mentioned artist/album/user is already registered."))
+                r = make_response(error_json(409, "This request violates policy. This resource has already been registered"))
                 r.status_code = 409
 
         except:
@@ -384,6 +389,14 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
             id_user = data["id_user"]
             id_avaliacao = data["id_avaliacao"]
 
+            # Checking for results to decide response status code since SQLite UPDATE
+            # does not return number of deleted rows.
+            sql = f"""SELECT * FROM listas_albuns
+                      WHERE id_album = {id_album} AND id_user = {id_user};"""
+            results = query_db(sql)
+
+            print(results)
+
             # Updating corresponding rows.
             sql = f"""UPDATE listas_albuns
                       SET id_avaliacao = {id_avaliacao}
@@ -391,7 +404,12 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
 
             query_db(sql)
 
-            r.status_code = 204
+            if len(results) > 0:
+                r.status_code = 204
+            else:
+                # If no rows were updated, set status code 400.
+                r = make_response(error_json(404, f"The mentioned user ({id_user}) has not reviewed album {id_album}."))
+                r.status_code = 404
 
         except:
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
@@ -454,6 +472,11 @@ def artistas(id_artista = None):
             insert_artist(id_spotify)
 
             r.status_code = 201
+
+        except sqlite3.IntegrityError as e:
+            if "UNIQUE" in e.__str__():
+                r = make_response(error_json(409, "This request violates policy. This artist has already been registered"))
+                r.status_code = 409
 
         except Exception as e:
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))

@@ -357,9 +357,9 @@ def rebuild_db():
 # print(r.json())
 # print("***")
 
-r = requests.delete("http://localhost:5000/albuns/utilizadores/5")
-print(r.status_code)
-print(r.json())
-print("***")
+# r = requests.delete("http://localhost:5000/albuns/utilizadores/5")
+# print(r.status_code)
+# print(r.json())
+# print("***")
 
 #
