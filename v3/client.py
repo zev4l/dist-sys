@@ -8,9 +8,11 @@ Números de aluno: 55373, 55371
 
 import sys
 import getopt
+import requests
 # from lock_stub import stub
 from os import system
 from time import sleep
+
 # import net_client as nc
 # import color_utils as cu
 
@@ -25,22 +27,23 @@ UNKNOWN_COMMAND_ERROR = "UNKNOWN COMMAND, TYPE 'HELP'"
 MISSING_ARGUMENTS_ERROR = "MISSING ARGUMENTS"
 EXCESSIVE_ARGUMENTS_ERROR = "TOO MANY ARGUMENTS"
 INVALID_ARGUMENTS_ERROR = "INVALID ARGUMENTS"
-GENERAL_CONNECTION_ERROR = cu.colorWrite("CONNECTION ERROR", 'red')
-CONNECTION_REFUSED_ERROR = cu.colorWrite("CONNECTION REFUSED", 'red')
 
-HELP_MESSAGE = f"""{cu.colorWrite('Comandos Disponíveis', 'green')}:
-  {cu.colorWrite('Servidor', 'blue')}:
-    -LOCK <número do recurso> <limite de tempo>
-    -UNLOCK <número do recurso>
-    -STATUS R/K <número do recurso>
-    -STATS Y/N/D
-    -PRINT
 
-  {cu.colorWrite('Cliente', 'blue')}:
-    -SLEEP <limite de tempo>
-    -HELP
-    -EXIT"""
+# GENERAL_CONNECTION_ERROR = cu.colorWrite("CONNECTION ERROR", 'red')
+# CONNECTION_REFUSED_ERROR = cu.colorWrite("CONNECTION REFUSED", 'red')
 
+# HELP_MESSAGE = f"""{cu.colorWrite('Comandos Disponíveis', 'green')}:
+#   {cu.colorWrite('Servidor', 'blue')}:
+#     -LOCK <número do recurso> <limite de tempo>
+#     -UNLOCK <número do recurso>
+#     -STATUS R/K <número do recurso>
+#     -STATS Y/N/D
+#     -PRINT
+#
+#   {cu.colorWrite('Cliente', 'blue')}:
+#     -SLEEP <limite de tempo>
+#     -HELP
+#     -EXIT"""
 
 
 def argumentChecker(userInput):
@@ -53,42 +56,45 @@ def argumentChecker(userInput):
     respetivamente ao comando invocado.
     """
 
-
-    return True # kekw, POC
+    return True  # kekw, POC
 
     # O número de argumentos tem que excluir o nome do comando
     command = userInput[0]
     arguments = userInput[1:]
 
-    argLimits = {"LOCK":2,
-                 "UNLOCK":1,
-                 "STATUS":2,
-                 "STATS":1,
-                 "PRINT":0}
+    argLimitsCreate = {"UTILIZADOR": 3,
+                       "ARTISTA": 2,
+                       "ALBUM": 2
+                       }
 
-    argLimits = {"UTILIZADOR":2,
-                 "ARTISTA":1,
-                 "ALBUM":1}
+    argLimitsReadDelete = {"UTILIZADOR": 2,
+                           "ARTISTA": 2,
+                           "ALBUM": 2
+                           }
 
+    argLimitsReadDeleteAll = {"UTILIZADORES": 1,
+                              "ARTISTAS": 1,
+                              "ALBUNS_A": 2,
+                              "ALBUNS_U": 2,
+                              "ALBUNS": 2}
 
-    if len(arguments) < argLimits[command]:
-        # Emitir erro de argumentos insuficientes e retornar False caso
-        # a quantidade de argumentos presentes nos dados introduzidos pelo
-        # utilizador for menor que a quantidadede argumentos esperada para
-        # o comando em causa.
-
-        print(MISSING_ARGUMENTS_ERROR)
-        return False
-
-    elif len(arguments) > argLimits[command]:
-        # Emitir erro de argumentos em demasia e retornar False caso a
-        # quantidade de argumentos presentes nos dados introduzidos pelo
-        # utilizador não for maior que a quantidade de argumentos esperada
-        # para o comando em causa.
-
-        print(EXCESSIVE_ARGUMENTS_ERROR)
-        return False
-
+    # if len(arguments) < argLimits[command]:
+    #     # Emitir erro de argumentos insuficientes e retornar False caso
+    #     # a quantidade de argumentos presentes nos dados introduzidos pelo
+    #     # utilizador for menor que a quantidadede argumentos esperada para
+    #     # o comando em causa.
+    #
+    #     print(MISSING_ARGUMENTS_ERROR)
+    #     return False
+    #
+    # elif len(arguments) > argLimits[command]:
+    #     # Emitir erro de argumentos em demasia e retornar False caso a
+    #     # quantidade de argumentos presentes nos dados introduzidos pelo
+    #     # utilizador não for maior que a quantidade de argumentos esperada
+    #     # para o comando em causa.
+    #
+    #     print(EXCESSIVE_ARGUMENTS_ERROR)
+    #     return False
 
     # A partir desta linha:
     #    Verifica-se a validade de cada argumento para cada comando (na lista acima
@@ -96,90 +102,179 @@ def argumentChecker(userInput):
     #    os tipos de dados dos argumentos introduzidos pelo utilizador não corresponderem
     #    com os tipos de dados esperados para os argumentos do comando em causa.
 
-    if command == "LOCK":
-        # Caso o comando seja LOCK, deve-se verificar o tipo de dados
-        # e integridade dos argumentos fornecidos. (int, int)
+    if command == "CREATE":
         try:
-            int(arguments[0])
-            int(arguments[1])
+            option = arguments[0]
+            if not option.isnumeric():
+                max_arg = argLimitsCreate.get(option)
+                if len(arguments) < max_arg:
+                    # Emitir erro de argumentos insuficientes e retornar False caso
+                    # a quantidade de argumentos presentes nos dados introduzidos pelo
+                    # utilizador for menor que a quantidadede argumentos esperada para
+                    # o comando em causa.
+
+                    print(MISSING_ARGUMENTS_ERROR)
+                    return False
+
+                elif len(arguments) > max_arg:
+                    # Emitir erro de argumentos em demasia e retornar False caso a
+                    # quantidade de argumentos presentes nos dados introduzidos pelo
+                    # utilizador não for maior que a quantidade de argumentos esperada
+                    # para o comando em causa.
+
+                    print(EXCESSIVE_ARGUMENTS_ERROR)
+                    return False
+
+            else:
+                if len(arguments) < 3:
+                    print(MISSING_ARGUMENTS_ERROR)
+                    return False
+
+                elif len(arguments) > 3:
+                    print(EXCESSIVE_ARGUMENTS_ERROR)
+                    return False
+
+                id_user = int(arguments[1])
+                id_album = int(arguments[2])
+
+            return True
+
+
+        except:
+            print(INVALID_ARGUMENTS_ERROR)
+            return False
+
+    elif command == "READ" or command == "DELETE":
+        try:
+            option = arguments[0]
+            if option != "ALL":
+                max_arg = argLimitsReadDelete.get(option)
+            else:
+                max_arg = argLimitsReadDeleteAll.get(option)
+            if len(arguments) < max_arg:
+                # Emitir erro de argumentos insuficientes e retornar False caso
+                # a quantidade de argumentos presentes nos dados introduzidos pelo
+                # utilizador for menor que a quantidadede argumentos esperada para
+                # o comando em causa.
+
+                print(MISSING_ARGUMENTS_ERROR)
+                return False
+
+            elif len(arguments) > max_arg:
+                # Emitir erro de argumentos em demasia e retornar False caso a
+                # quantidade de argumentos presentes nos dados introduzidos pelo
+                # utilizador não for maior que a quantidade de argumentos esperada
+                # para o comando em causa.
+
+                print(EXCESSIVE_ARGUMENTS_ERROR)
+                return False
+
+            if option in ("UTILIZADOR", "ARTISTA", "ALBUM"):
+                int(arguments[1])
+            elif option == "ALL":
+                sub_option = arguments[1]
+                if sub_option in ("UTILIZADORES", "ARTISTAS", "ALBUNS_A", "ALBUNS_U"):
+                    int(arguments[2])
+                elif sub_option == "ALBUNS":
+                    if len(arguments) == 3:
+                        int(arguments[2])
+                else:
+                    return False
+            else:
+                return False
+
             return True
 
         except:
             print(INVALID_ARGUMENTS_ERROR)
             return False
 
-    if command == "UNLOCK":
-        # Caso o comando seja UNLOCK, deve-se verificar o tipo de dados
-        # e integridade dos argumentos fornecidos. (int)
+    elif command == "UPDATE":
         try:
-            int(arguments[0])
-            return True
-
+            option = arguments[0]
+            if option == "ALBUM":
+                if len(arguments) < 4:
+                    print(MISSING_ARGUMENTS_ERROR)
+                    return False
+                elif len(arguments) > 4:
+                    print(EXCESSIVE_ARGUMENTS_ERROR)
+                    return False
+                id_album = int(arguments[1])
+                id_user = int(arguments[3])
+                return True
+            elif option == "UTILIZADOR":
+                if len(arguments) < 3:
+                    print(MISSING_ARGUMENTS_ERROR)
+                    return False
+                elif len(arguments) > 3:
+                    print(EXCESSIVE_ARGUMENTS_ERROR)
+                    return False
+                id_user = int(arguments[1])
+                return True
+            return False
         except:
             print(INVALID_ARGUMENTS_ERROR)
             return False
 
-    if command == "STATUS":
-        # Caso o comando seja STATUS, deve-se verificar o tipo de dados
-        # e integridade dos argumentos fornecidos. (("R", "K"), int)
 
-        try:
-            if arguments[0] not in ("R", "K"):
-                raise INVALID_ARGUMENTS_ERROR
-
-            int(arguments[1])
-            return True
-
-        except:
-            print(INVALID_ARGUMENTS_ERROR)
-            return False
-
-    if command == "STATS":
-        # Caso o comando seja STATS, deve-se verificar
-        # e integridade dos argumentos fornecidos. (("Y", "N", "D"))
-
-        try:
-            if arguments[0] not in ("Y", "N", "D"):
-                raise INVALID_ARGUMENTS_ERROR
-
-            return True
-
-        except:
-            print(INVALID_ARGUMENTS_ERROR)
-            return False
-
-    if command == "PRINT":
-        # Caso o comando seja PRINT, dão-se automaticamente como válidos
-        # os dados introduzidos pelo utilizador pois este comando não requer
-        # argumentos.
-
-        return True
-
-def translate(content):
-    """
-    Ao receber uma lista de elementos (str ou nativos) como True, False, None,
-    devolve a versão verbose correspondente.
-    """
-    content = content.copy()
-
-    subs = {True:"OK",
-        False:"NOK",
-        None:"UNKNOWN RESOURCE",
-        Ellipsis:"DISABLED"}
-
-    element = 0
-    while element < len(content):
-
-        if content[element] in subs:
-            content[element] = subs[content[element]]
-
-        if "Ellipsis" in str(content[element]):
-            content[element] = content[element].replace("Ellipsis", "DISABLED")
-
-        element += 1
-
-    return content
-
+    # if command == "LOCK":
+    #     # Caso o comando seja LOCK, deve-se verificar o tipo de dados
+    #     # e integridade dos argumentos fornecidos. (int, int)
+    #     try:
+    #         int(arguments[0])
+    #         int(arguments[1])
+    #         return True
+    #
+    #     except:
+    #         print(INVALID_ARGUMENTS_ERROR)
+    #         return False
+    #
+    # if command == "UNLOCK":
+    #     # Caso o comando seja UNLOCK, deve-se verificar o tipo de dados
+    #     # e integridade dos argumentos fornecidos. (int)
+    #     try:
+    #         int(arguments[0])
+    #         return True
+    #
+    #     except:
+    #         print(INVALID_ARGUMENTS_ERROR)
+    #         return False
+    #
+    # if command == "STATUS":
+    #     # Caso o comando seja STATUS, deve-se verificar o tipo de dados
+    #     # e integridade dos argumentos fornecidos. (("R", "K"), int)
+    #
+    #     try:
+    #         if arguments[0] not in ("R", "K"):
+    #             raise INVALID_ARGUMENTS_ERROR
+    #
+    #         int(arguments[1])
+    #         return True
+    #
+    #     except:
+    #         print(INVALID_ARGUMENTS_ERROR)
+    #         return False
+    #
+    # if command == "STATS":
+    #     # Caso o comando seja STATS, deve-se verificar
+    #     # e integridade dos argumentos fornecidos. (("Y", "N", "D"))
+    #
+    #     try:
+    #         if arguments[0] not in ("Y", "N", "D"):
+    #             raise INVALID_ARGUMENTS_ERROR
+    #
+    #         return True
+    #
+    #     except:
+    #         print(INVALID_ARGUMENTS_ERROR)
+    #         return False
+    #
+    # if command == "PRINT":
+    #     # Caso o comando seja PRINT, dão-se automaticamente como válidos
+    #     # os dados introduzidos pelo utilizador pois este comando não requer
+    #     # argumentos.
+    #
+    #     return True
 
 
 # Programa Principal
@@ -234,7 +329,6 @@ try:
             command = userInput[0]
             arguments = userInput[1:]
 
-
             if command == "EXIT":
                 # Sair do ciclo caso o utilizador invoque o comando EXIT
                 halt = True
@@ -267,7 +361,6 @@ try:
             #     except:
             #         print(MISSING_ARGUMENTS_ERROR)
 
-
             elif command == "CLEAR":
                 # Limpar o histórico da consola caso o utilizador invoque o comando SLEEP.
                 system("clear")
@@ -276,54 +369,77 @@ try:
             elif command in serverCommands:
 
                 if argumentChecker(userInput):
-                # Uso da função argumentChecker para verificar a integridade de validade
-                # dos argumentos fornecidos pelo utilizador em relação ao comando que o mesmo
-                # invocou
-
+                    # Uso da função argumentChecker para verificar a integridade de validade
+                    # dos argumentos fornecidos pelo utilizador em relação ao comando que o mesmo
+                    # invocou
 
                     # Formular o pedido antes de ser enviado ao servidor, contendo o comando
                     # e os respetivos argumentos na posição correta.
                     # Quando se trata de LOCK e UNLOCK, adicionar também o ID do cliente
                     # ao pedido.
 
-
-                    if command == "":
-                        resource_number = arguments[0]
-                        time_limit = arguments[1]
-                        request, response = stub.lock(resource_number, time_limit, ID)
-
-                    if command == "UNLOCK":
-                        resource_number = arguments[0]
-                        request, response = stub.unlock(resource_number, ID)
-
-                    if command == "STATUS":
+                    if command == "CREATE":
                         option = arguments[0]
-                        resource_number = int(arguments[1])
-                        request, response = stub.status(option, resource_number)
+                        if option == "UTILIZADOR":
+                            name = arguments[1]
+                            password = arguments[2]
+                            # efetuar request
+                        elif option == "ARTISTA" or option == "ALBUM":
+                            id_spotify = arguments[1]
+                            # efetuar request
+                        else:
+                            id_user = int(arguments[0])
+                            id_album = int(arguments[1])
+                            avaliacao = arguments[2]
+                            # efetuar request
 
-                    if command == "STATS":
+                    elif command == "READ" or command == "DELETE":
                         option = arguments[0]
-                        request, response = stub.stats(option)
+                        if option in ("UTILIZADOR", "ARTISTA", "ALBUM"):
+                            id = arguments[1]
+                            # efetuar request
+                        else:
+                            sub_option = arguments[1]
+                            if sub_option in ("UTILIZADORES", "ARTISTAS"):
+                                pass # efetuar request
+                            elif sub_option == "ALBUNS":
+                                if len(arguments) == 3:
+                                    avaliacao = arguments[3]
+                                    # efetuar request
+                                else:
+                                    pass # efetuar request
+                            else:
+                                id = arguments[3]
+                                # efetuar request
 
-                    if command == "PRINT":
-                        request, response = stub.print()
+                    else: # UPDATE
+                        option = arguments[0]
+                        if option == "ALBUM":
+                            id_album = int(arguments[1])
+                            avaliacao = arguments[2]
+                            id_user = int(arguments[3])
+                            # efetuar request
+                        else: # UTILIZADOR
+                            id_user = int(arguments[1])
+                            password = arguments[2]
+                            # efetuar request
 
 
-                    if len([opt for opt in opts if "-r" in opt]):
-                        # Uso da função auxiliar translate() para traduzir o conteúdo
-                        # recebido do servidor em algo legível para o utilizador
-                        response = translate(response)
 
-                    if not len([opt for opt in opts if "-c" in opt]):
-                        # Uso do módulo color_utils para estilizar o output
-                        response = cu.color(response, command)
-
+                    # if len([opt for opt in opts if "-r" in opt]):
+                    #     # Uso da função auxiliar translate() para traduzir o conteúdo
+                    #     # recebido do servidor em algo legível para o utilizador
+                    #     response = translate(response)
+                    #
+                    # if not len([opt for opt in opts if "-c" in opt]):
+                    #     # Uso do módulo color_utils para estilizar o output
+                    #     response = cu.color(response, command)
 
                     # Impressão dos dados enviados e recebidos
                     print("\nSent:\n" + str(request))
 
                     if command == "PRINT":
-                        print("\nReceived:\n[" + str(response[0])+",")
+                        print("\nReceived:\n[" + str(response[0]) + ",")
                         print(response[1] + "]\n")
                     else:
                         print("\nReceived:\n" + "[" + ", ".join([str(elem) for elem in response]) + "]" + "\n")
