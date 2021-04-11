@@ -7,6 +7,9 @@ from flask import Flask, g, request, make_response, jsonify
 CLIENT_ID = "a040271774db4f40b192f953a0872d84"
 CLIENT_SECRET = "6460e1db9bd24d3398044e3c96d2a513"
 
+INTERNAL_SERVER_ERROR = (500,
+                         "Something went wrong while processing your request. Double-check your arguments or try again later.")
+
 # TODO: remove these imports
 import traceback as t
 from pprint import pprint
@@ -20,11 +23,13 @@ DATABASE = "data.db"
 
 # TODO: Revise all status codes
 
+# TODO: Document functions
+
 # Using Spotify API
 
 def query_spotify(id, type = "artist", keys="all"):
-    # Obtaining access token
 
+    # Obtaining access token
     AUTH_URL = 'https://accounts.spotify.com/api/token'
     BASE_URL = 'https://api.spotify.com/v1/'
 
@@ -84,7 +89,7 @@ def query_spotify(id, type = "artist", keys="all"):
 
             return [data[key] for key in keys]
 
-# Routes...
+# ROUTES
 
 @app.route('/utilizadores', methods = ['POST', 'GET', 'DELETE'])
 @app.route('/utilizadores/<int:id_user>', methods = ["GET", "DELETE", "PUT"])
@@ -107,14 +112,15 @@ def utilizadores(id_user = None):
             r = make_response(jsonify(results))
 
             # Setting status codes based on query results
-            if len(results) > 0:
+            if len(results) > 0 or id_user == None:
                 r.status_code = 200
             else:
-                # TODO: perhaps 404?
-                r.status_code = 400
+                r = make_response(error_json(404,
+                                             f"The requested user ({id_user}) could not be found."))
+                r.status_code = 404
 
         except:
-            r = make_response()
+            r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
 
 
@@ -132,12 +138,12 @@ def utilizadores(id_user = None):
 
             query_db(sql)
 
-            r.status_code = 200
+            # Status code 201: Successfully Created
+            r.status_code = 201
 
-        except Exception as e:
+        except:
+            r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
-            print(e)
-            print(e.__class__.__name__)
 
 
 
@@ -146,31 +152,20 @@ def utilizadores(id_user = None):
 
         try:
             if id_user:
-                # Checking for results to decide response status code since SQLite DELETE
-                # does not return number of deleted rows.
-                sql_count = f"SELECT * FROM utilizadores WHERE id = {id_user};"
 
                 # Deleting corresponding rows.
                 sql = f"DELETE FROM utilizadores WHERE id = {id_user}"
 
             else:
-                # Checking for results to decide response status code since SQLite DELETE
-                # does not return number of deleted rows.
-                sql_count = f"SELECT * FROM utilizadores"
-
                 # Deleting corresponding rows.
                 sql = f"DELETE FROM utilizadores"
 
-            results = query_db(sql_count)
             query_db(sql)
 
-            if len(results) > 0:
-                r.status_code = 200
-            else:
-                r.status_code = 400
+            r.status_code = 200
 
         except:
-            # If no rows were deleted, set status code 400.
+            r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
 
 
@@ -180,26 +175,15 @@ def utilizadores(id_user = None):
             data = request.json
             password = data["senha"]
 
-            # Checking for results to decide response status code since SQLite UPDATE
-            # does not return number of deleted rows.
-            sql_count = f"SELECT * FROM utilizadores WHERE id = {id_user};"
-            results = query_db(sql_count)
-
             # Updating corresponding rows.
             sql = f"UPDATE utilizadores SET senha = '{password}' WHERE id = {id_user};"
             query_db(sql)
 
-            if len(results) > 0:
-                r.status_code = 200
-            else:
-                # If no rows were updated, set status code 400.
-                r.status_code = 400
+            r.status_code = 200
 
         except:
+            r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
-
-
-
 
     return r
 
@@ -215,49 +199,67 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
     r = make_response()
 
     if request.method == "GET":
-        if "avaliacoes" in request.path:
-            if id_avaliacao:
+        try:
+            if "avaliacoes" in request.path:
+                if id_avaliacao:
+                    sql = f"""SELECT DISTINCT A.id, A.id_spotify, A.nome, A.id_artista
+                              FROM albuns AS A, listas_albuns as LA
+                              WHERE A.id == LA.id_album AND LA.id_avaliacao = {id_avaliacao}"""
+                else:
+                    sql = f"SELECT * FROM listas_albuns"
+
+            elif "utilizadores" in request.path:
                 sql = f"""SELECT DISTINCT A.id, A.id_spotify, A.nome, A.id_artista
                           FROM albuns AS A, listas_albuns as LA
-                          WHERE A.id == LA.id_album AND LA.id_avaliacao = {id_avaliacao}"""
+                          WHERE A.id == LA.id_album AND LA.id_user = {id_user}"""
+
+            elif "artistas" in request.path:
+                sql = f"SELECT id, id_spotify, nome, id_artista FROM albuns WHERE id_artista = {id_artista}"
+
             else:
-                sql = f"SELECT * FROM listas_albuns"
+                # Logic if GET -> READ or READ ALL
+                if id_album:
+                    sql = f"SELECT id, id_spotify, nome, id_artista FROM albuns WHERE id = {id_album}"
+                else:
+                    sql = "SELECT id, id_spotify, nome, id_artista FROM albuns"
 
-        elif "utilizadores" in request.path:
-            sql = f"""SELECT DISTINCT A.id, A.id_spotify, A.nome, A.id_artista
-                      FROM albuns AS A, listas_albuns as LA
-                      WHERE A.id == LA.id_album AND LA.id_user = {id_user}"""
+            results = query_db(sql)
 
-        elif "artistas" in request.path:
-            sql = f"SELECT id, id_spotify, nome, id_artista FROM albuns WHERE id_artista = {id_artista}"
+            processed_results = []
 
-        else:
-            # Logic if GET -> READ or READ ALL
-            if id_album:
-                sql = f"SELECT id, id_spotify, nome, id_artista FROM albuns WHERE id = {id_album}"
+            if not ("avaliacoes" in request.path and not id_avaliacao):
+                for album in results:
+                    spotify_details = query_spotify(album["id_spotify"], type="album")
+                    print(spotify_details)
+
+                    # Merging both dictionaries and appending to results
+                    processed_results.append({**album, **spotify_details})
+
+            # Creating response
+            r = make_response(jsonify(processed_results))
+
+            # Setting status codes based on query results
+            if len(results) > 0 or not any((id_avaliacao, id_user, id_artista, id_album)):
+                r.status_code = 200
+                print("aaa")
+
             else:
-                sql = "SELECT id, id_spotify, nome, id_artista FROM albuns"
+                if id_avaliacao:
+                    description = f"No albums with rating {id_avaliacao} were found."
+                elif id_user:
+                    description = f"No albums rated by user {id_user} were found."
+                elif id_artista:
+                    description = f"No albums by artist {id_artista} were found."
+                elif id_album:
+                    description = f"Album {id_album} could not be found."
 
-        results = query_db(sql)
+                r = make_response(error_json(404, description))
+                r.status_code = 404
 
-        processed_results = []
-        for album in results:
-            spotify_details = query_spotify(album["id_spotify"], type="album")
-            print(spotify_details)
-
-            # Merging both dictionaries and appending to results
-            processed_results.append({**album, **spotify_details})
-
-
-        # Creating response
-        r = make_response(jsonify(processed_results))
-
-        # Setting status codes based on query results
-        if len(results) > 0:
-            r.status_code = 200
-        else:
-            # TODO: perhaps 404?
-            r.status_code = 400
+        except Exception as e:
+            r = make_response(error_json(*INTERNAL_SERVER_ERROR))
+            r.status_code = 500
+            print(e)
 
 
     elif request.method == "POST":
@@ -278,20 +280,20 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
                 data = request.json
                 id_spotify = data["id_spotify"]
 
-                # Obter informações sobre o album. Nome e info. sobre o artista
+                # Obtaining info about album and its authot
                 name, info_spotify_artista = query_spotify(id_spotify, type="album", keys=["name", "artists"])
 
-                # Selecionar o ID do spotify do artista
+                # Selecting the artist's spotify ID
                 id_spotify_artista = info_spotify_artista[0]["id"]
 
-                # Verificar se, internamente, existe algum artista com esse id_spotify
+                # Checking if, internally, there is any registered artist with such a spotify ID
                 search_artist = f"SELECT id FROM artistas WHERE id_spotify = '{id_spotify_artista}'"
 
 
                 id_artista = query_db(search_artist)
 
-                # Caso exista, continuar com a inserção do album.
-                # Caso não exista, inseri-lo na base de dados e obter o seu ID interno.
+                # If there is, continue with album insertion
+                # In case there isn't, insert artist into database and obtain it's internal ID
                 if not id_artista:
                     insert_artist(id_spotify_artista)
                     id_artista = query_db(search_artist)[0].get("id")
@@ -302,11 +304,10 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
 
             query_db(sql)
 
-            r.status_code = 200
+            r.status_code = 201
 
-        except Exception as e:
-            print(e)
-            print(e.__class__.__name__)
+        except:
+            r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
 
 
@@ -314,8 +315,7 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
         # Logic if DELETE -> DELETE
         try:
             if "avaliacoes" in request.path:
-                # Checking for results to decide response status code since SQLite DELETE
-                # does not return number of deleted rows.
+                # Checking for matching albums
                 sql_count = f"""SELECT A.id
                                 FROM albuns AS A, listas_albuns AS LA
                                 WHERE A.id = LA.id_album AND LA.id_avaliacao = {id_avaliacao}"""
@@ -326,11 +326,6 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
                           WHERE A.id in ({sql_count})"""
 
             elif "utilizadores" in request.path:
-                # Checking for results to decide response status code since SQLite DELETE
-                # does not return number of deleted rows.
-                sql_count = f"""SELECT A.id, A.id_spotify, A.nome, A.id_artista
-                          FROM albuns AS A, listas_albuns AS LA
-                          WHERE A.id = LA.id_album AND LA.id_user = {id_user}"""
 
                 # Deleting corresponding rows
                 sql = f"""DELETE
@@ -338,9 +333,6 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
                           WHERE A.id = LA.id_album AND LA.id_user = {id_user}"""
 
             elif "artistas" in request.path:
-                # Checking for results to decide response status code since SQLite DELETE
-                # does not return number of deleted rows.
-                sql_count = f"SELECT id, id_spotify, nome, id_artista FROM albuns WHERE id_artista = {id_artista}"
 
                 # Deleting corresponding rows
                 sql = f"DELETE FROM albuns WHERE id_artista = {id_artista}"
@@ -348,9 +340,6 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
             else:
                 # Logic if GET -> READ or READ ALL
                 if id_album:
-                    # Checking for results to decide response status code since SQLite DELETE
-                    # does not return number of deleted rows.
-                    sql_count = f"SELECT id, id_spotify, nome, id_artista FROM albuns WHERE id = {id_album}"
 
                     # Deleting corresponding rows
                     sql = f"DELETE FROM albuns WHERE id = {id_album}"
@@ -360,17 +349,12 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
                     # Deleting all rows
                     sql = "DELETE FROM albuns"
 
-            results = query_db(sql_count)
             query_db(sql)
 
-            if len(results) > 0:
-                r.status_code = 200
-            else:
-                r.status_code = 400
+            r.status_code = 200
 
-        except Exception as e:
-            print(e)
-            print(e.__class__.__name__)
+        except:
+            r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
 
 
@@ -382,14 +366,6 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
             id_user = data["id_user"]
             id_avaliacao = data["id_avaliacao"]
 
-            # Checking for results to decide response status code since SQLite UPDATE
-            # does not return number of deleted rows.
-            sql = f"""SELECT * FROM listas_albuns
-                      WHERE id_album = {id_album} AND id_user = {id_user};"""
-            results = query_db(sql)
-
-            print(results)
-
             # Updating corresponding rows.
             sql = f"""UPDATE listas_albuns
                       SET id_avaliacao = {id_avaliacao}
@@ -397,17 +373,11 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
 
             query_db(sql)
 
-            if len(results) > 0:
-                r.status_code = 200
-            else:
-                # If no rows were updated, set status code 400.
-                r.status_code = 400
+            r.status_code = 200
 
-        except Exception as e:
-            print(e)
-            print(e.__class__.__name__)
+        except:
+            r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
-
 
     return r
 
@@ -416,41 +386,46 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
 # Check reference server for individual functions and arguments...
 def artistas(id_artista = None):
 
-    r = make_response()
-
     if request.method == "GET":
-        # Logic if GET -> READ or READ ALL
+        try:
+            # Logic if GET -> READ or READ ALL
 
-        if id_artista:
-            sql = f"SELECT id, id_spotify, nome FROM artistas WHERE id = {id_artista}"
-        else:
-            sql = "SELECT id, id_spotify, nome FROM artistas"
+            if id_artista:
+                sql = f"SELECT id, id_spotify, nome FROM artistas WHERE id = {id_artista}"
+            else:
+                sql = "SELECT id, id_spotify, nome FROM artistas"
 
+            results = query_db(sql)
 
+            processed_results = []
 
-        results = query_db(sql)
+            for artist in results:
+                # Querying Spotify for data about artist
+                spotify_details = query_spotify(artist["id_spotify"], type="artist")
 
-        processed_results = []
+                # Merging both dictionaries (local data and spotify data) and appending to results
+                processed_results.append({**artist, **spotify_details})
 
-        for artist in results:
-            spotify_details = query_spotify(artist["id_spotify"], type="artist")
+            # Creating response
+            r = make_response(jsonify(processed_results))
 
-            # Merging both dictionaries and appending to results
-            processed_results.append({**artist, **spotify_details})
+            # Setting status codes based on query results
+            if len(results) > 0 or id_artista == None:
+                r.status_code = 200
+            else:
+                r = make_response(error_json(404,
+                                             f"The requested artist ({id_artista}) could not be found."))
+                r.status_code = 404
 
-        # Creating response
-        r = make_response(jsonify(processed_results))
-
-        # Setting status codes based on query results
-        if len(results) > 0:
-            r.status_code = 200
-        else:
-            # TODO: perhaps 404?
-            r.status_code = 400
+        except:
+            r = make_response(error_json(*INTERNAL_SERVER_ERROR))
+            r.status_code = 500
 
 
     elif request.method == "POST":
         # Logic if POST -> CREATE
+
+        r = make_response()
 
         try:
 
@@ -460,12 +435,13 @@ def artistas(id_artista = None):
 
             insert_artist(id_spotify)
 
-            r.status_code = 200
+            r.status_code = 201
 
         except Exception as e:
+            r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
-            print(e.__class__.__name__)
             print(e)
+            print(e.__class__.__name__)
 
 
     elif request.method == "DELETE":
@@ -473,31 +449,19 @@ def artistas(id_artista = None):
 
         try:
             if id_artista:
-                # Checking for results to decide response status code since SQLite DELETE
-                # does not return number of deleted rows.
-                sql_count = f"SELECT * FROM artistas WHERE id = {id_artista};"
-
                 # Deleting corresponding rows.
                 sql = f"DELETE FROM artistas WHERE id = {id_artista}"
 
             else:
-                # Checking for results to decide response status code since SQLite DELETE
-                # does not return number of deleted rows.
-                sql_count = f"SELECT * FROM artistas"
-
                 # Deleting corresponding rows.
                 sql = f"DELETE FROM artistas"
 
-            results = query_db(sql_count)
             query_db(sql)
 
-            if len(results) > 0:
-                r.status_code = 200
-            else:
-                r.status_code = 400
+            r.status_code = 200
 
         except:
-            # If no rows were deleted, set status code 400.
+            r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
 
     return r
@@ -512,10 +476,19 @@ def insert_artist(id_spotify):
 
     query_db(sql)
 
-def error_json(title, description):
-    message = {"title":title,
-               "description":description}
 
+def error_json(code, description):
+
+    URLs = {500:"https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/500",
+            404:"https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/404"
+            }
+    titles = {500:"Internal Server Error",
+              404:"Resource Not Found"}
+
+    return jsonify({"describedBy":URLs[code],
+                    "httpStatus":code,
+                    "title":titles[code],
+                    "detail":description})
 
 # Database related functions
 
