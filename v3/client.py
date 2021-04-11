@@ -9,11 +9,8 @@ Números de aluno: 55373, 55371
 import sys
 import getopt
 import requests
-# from lock_stub import stub
-from os import system
-from time import sleep
+import os
 
-# import net_client as nc
 import color_utils as cu
 from pprint import pprint
 
@@ -22,7 +19,7 @@ from pprint import pprint
 # Mensagens de Erro
 
 serverCommands = ("CREATE", "READ", "DELETE", "UPDATE")
-PARAMETER_ERROR = "Verifique os parâmetros.\nUtilização: lock_client.py [-c] [-r] <ID> <IP/Hostname> <Porto>"
+PARAMETER_ERROR = "Verifique os parâmetros.\nUtilização: client.py [-c] <IP/Hostname> <Porto>"
 UNKNOWN_COMMAND_ERROR = "UNKNOWN COMMAND, TYPE 'HELP'"
 MISSING_ARGUMENTS_ERROR = "MISSING ARGUMENTS"
 EXCESSIVE_ARGUMENTS_ERROR = "TOO MANY ARGUMENTS"
@@ -33,14 +30,35 @@ CONNECTION_REFUSED_ERROR = cu.colorWrite("CONNECTION REFUSED", 'red')
 
 HELP_MESSAGE = f"""{cu.colorWrite('Comandos Disponíveis', 'green')}:
   {cu.colorWrite('Servidor', 'blue')}:
-    -LOCK <número do recurso> <limite de tempo>
-    -UNLOCK <número do recurso>
-    -STATUS R/K <número do recurso>
-    -STATS Y/N/D
-    -PRINT
+    -CREATE 
+        -UTILIZADOR <nome> <senha>
+        -ALBUM <id_spotify>
+        -ARTISTA <id_spotify>
+        -<id_user> <id_album> <avaliacao>
+    -READ
+        -UTILIZADOR <id_user>
+        -ALBUM <id_album>
+        -ARTISTA <id_artista>
+        -ALBUM <id_album>
+        -ALL <UTILIZADORES | ARTISTAS | ALBUNS>
+        -ALL ALBUNS_A <id_artista>
+        -ALL ALBUNS_U <id_user>
+        -ALL ALBUNS <avaliacao>
+    -DELETE
+        -UTILIZADOR <id_user>
+        -ALBUM <id_album>
+        -ARTISTA <id_artista>
+        -ALBUM <id_album>
+        -ALL <UTILIZADORES | ARTISTAS | ALBUNS>
+        -ALL ALBUNS_A <id_artista>
+        -ALL ALBUNS_U <id_user>
+        -ALL ALBUNS <avaliacao>
+    -UPDATE
+        -UTILIZADOR <id_user> <senha>
+        -ALBUM <id_album> <avaliacao> <id_user>
 
   {cu.colorWrite('Cliente', 'blue')}:
-    -SLEEP <limite de tempo>
+    -CLEAR
     -HELP
     -EXIT"""
 
@@ -48,7 +66,7 @@ HELP_MESSAGE = f"""{cu.colorWrite('Comandos Disponíveis', 'green')}:
 def argumentChecker(userInput):
     """
     Verifica a integridade e validade dos argumentos relativos aos comandos
-    suportados pelo servidor (LOCK, UNLOCK, STATUS, STATS, PRINT).
+    suportados pelo servidor (CREATE, READ, DELETE, UPDATE).
     Requires: userInput é uma lista representante dos vários dados introduzidos
     pelo utilizador.
     Ensures: Devolve um booleano representando a validade dos argumentos introduzidos
@@ -74,24 +92,6 @@ def argumentChecker(userInput):
                               "ALBUNS_A": 3,
                               "ALBUNS_U": 3,
                               "ALBUNS": 3}
-
-    # if len(arguments) < argLimits[command]:
-    #     # Emitir erro de argumentos insuficientes e retornar False caso
-    #     # a quantidade de argumentos presentes nos dados introduzidos pelo
-    #     # utilizador for menor que a quantidadede argumentos esperada para
-    #     # o comando em causa.
-    #
-    #     print(MISSING_ARGUMENTS_ERROR)
-    #     return False
-    #
-    # elif len(arguments) > argLimits[command]:
-    #     # Emitir erro de argumentos em demasia e retornar False caso a
-    #     # quantidade de argumentos presentes nos dados introduzidos pelo
-    #     # utilizador não for maior que a quantidade de argumentos esperada
-    #     # para o comando em causa.
-    #
-    #     print(EXCESSIVE_ARGUMENTS_ERROR)
-    #     return False
 
     # A partir desta linha:
     #    Verifica-se a validade de cada argumento para cada comando (na lista acima
@@ -213,6 +213,7 @@ def argumentChecker(userInput):
                     return False
                 id_user = int(arguments[1])
                 return True
+            print(INVALID_ARGUMENTS_ERROR)
             return False
         except:
             print(INVALID_ARGUMENTS_ERROR)
@@ -288,31 +289,12 @@ try:
                 print(HELP_MESSAGE)
 
 
-            # elif command == "SLEEP":
-            #     # Invocar sleep pela duração referida pelo utilizador caso este
-            #     # use o comando SLEEP. Caso o utilizador inclua a quantidade errada
-            #     # de argumentos, será informado através dos erros correspondentes,
-            #     # o mesmo acontecerá caso o argumento seja inválido.
-            #
-            #     try:
-            #         if len(arguments) > 1:
-            #             raise AssertionError
-            #
-            #         amount = int(arguments[0])
-            #         sleep(amount)
-            #
-            #     except ValueError:
-            #         print(INVALID_ARGUMENTS_ERROR)
-            #
-            #     except AssertionError:
-            #         print(EXCESSIVE_ARGUMENTS_ERROR)
-            #
-            #     except:
-            #         print(MISSING_ARGUMENTS_ERROR)
-
             elif command == "CLEAR":
                 # Limpar o histórico da consola caso o utilizador invoque o comando SLEEP.
-                system("clear")
+                if os.name == "nt":
+                    os.system("cls")
+                else:
+                    os.system("clear")
 
             elif command in serverCommands:
 
@@ -323,8 +305,6 @@ try:
 
                     # Formular o pedido antes de ser enviado ao servidor, contendo o comando
                     # e os respetivos argumentos na posição correta.
-                    # Quando se trata de LOCK e UNLOCK, adicionar também o ID do cliente
-                    # ao pedido.
 
                     if command == "CREATE":
                         option = arguments[0].upper()
@@ -416,7 +396,6 @@ try:
                                     print(r.status_code)
                                     print("***")
                                 # efetuar request
-
                     else:  # UPDATE
                         option = arguments[0]
                         if option == "ALBUM":
@@ -435,24 +414,6 @@ try:
                             r = requests.put(f"http://{HOST}:{PORT}/utilizadores/{id_user}", json=utilizador)
                             print(r.status_code)
                             print("***")
-
-                    # if len([opt for opt in opts if "-r" in opt]):
-                    #     # Uso da função auxiliar translate() para traduzir o conteúdo
-                    #     # recebido do servidor em algo legível para o utilizador
-                    #     response = translate(response)
-                    #
-                    # if not len([opt for opt in opts if "-c" in opt]):
-                    #     # Uso do módulo color_utils para estilizar o output
-                    #     response = cu.color(response, command)
-
-                    # Impressão dos dados enviados e recebidos
-                    # print("\nSent:\n" + str(request))
-                    #
-                    # if command == "PRINT":
-                    #     print("\nReceived:\n[" + str(response[0]) + ",")
-                    #     print(response[1] + "]\n")
-                    # else:
-                    #     print("\nReceived:\n" + "[" + ", ".join([str(elem) for elem in response]) + "]" + "\n")
 
             else:
                 # Emitir erro de comando desconhecido caso este não se encontre na lista
