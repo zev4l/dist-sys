@@ -131,8 +131,8 @@ def argumentChecker(userInput):
                     print(EXCESSIVE_ARGUMENTS_ERROR)
                     return False
 
-                id_user = int(arguments[1])
-                id_album = int(arguments[2])
+                id_user = int(arguments[0])
+                id_album = int(arguments[1])
 
             return True
 
@@ -391,7 +391,7 @@ try:
                                         pprint(r.json())
                                         print("***")
                                     else:
-                                        r = requests.delete(queryUrlReadDeleteAll.get(sub_option + f"/avaliacoes/{avaliacao}"))
+                                        r = requests.delete(queryUrlReadDeleteAll.get(sub_option) + f"/avaliacoes/{avaliacao}")
                                         print(r.status_code)
                                         print("***")
                                 else:
