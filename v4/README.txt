@@ -1,4 +1,4 @@
-Aplicações Distribuídas - Projeto 1
+Aplicações Distribuídas - Projeto 4
 Grupo 77
 
 
@@ -11,12 +11,7 @@ Funcionalidades:
 
 • Utilização: server
 
-• Construído com a framework Flask e o motor de base de dados SQL SQLite.
-
-• Integração com o API do Spotify.
-	- Informação extra sobre o artista/álbum providenciada pelo Spotify.
-
-• Erros descritos detalhadamente ao cliente.
+• Redirecionamento do utilizador quando este tenta aceder aos recursos /artistas e /albuns antes de fazer login
 
 • Código detalhadamente documentado.
 

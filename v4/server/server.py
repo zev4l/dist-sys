@@ -6,12 +6,22 @@ Números de aluno: 55373, 55371
 
 import requests # To interact with Spotify API
 import sqlite3
+import ssl
 from db import connect_db
 from os.path import isfile
-from flask import Flask, g, request, make_response, jsonify
+from flask import Flask, g, request, make_response, jsonify, redirect, url_for
+from requests_oauthlib import OAuth2Session
 
+# Cert path
+CERT_PATH = "/mnt/d/_/Projects/FCUL/AD/dist-sys/v4/certs/"
+
+# OAuth2 related constants
 CLIENT_ID = "a040271774db4f40b192f953a0872d84"
 CLIENT_SECRET = "6460e1db9bd24d3398044e3c96d2a513"
+AUTHORIZATION_BASE_URL = 'https://accounts.spotify.com/authorize'
+REDIRECT_URI = 'https://localhost:5000/callback'
+spotify = OAuth2Session(CLIENT_ID, redirect_uri=REDIRECT_URI)
+
 
 INTERNAL_SERVER_ERROR = (500,
                          "Something went wrong while processing your request. Double-check your arguments or try again later.")
@@ -26,23 +36,19 @@ def query_spotify(id, type = "artist", keys="all"):
     Query Spotify REST API for data regarding artist or album.
     """
 
-    # Obtaining access token
-    AUTH_URL = 'https://accounts.spotify.com/api/token'
     BASE_URL = 'https://api.spotify.com/v1/'
 
-    auth_response = requests.post(AUTH_URL, {
-    'grant_type': 'client_credentials',
-    'client_id': CLIENT_ID,
-    'client_secret': CLIENT_SECRET,})
-
-    access_token = auth_response.json()['access_token']
-
     headers = {
-    'Authorization': 'Bearer {token}'.format(token=access_token)}
+    'Authorization': 'Bearer {token}'.format(token=spotify.access_token)}
 
     if type == "artist":
 
         r = requests.get(BASE_URL + 'artists/' + id, headers=headers)
+
+        print(r.status_code == 401)
+
+        if r.status_code == 401:
+            return "INVALID"
 
         data = r.json()
 
@@ -65,6 +71,10 @@ def query_spotify(id, type = "artist", keys="all"):
 
         r = requests.get(BASE_URL + 'albums/' + id, headers=headers)
 
+        # Return INVALID if the access token is invalid
+        if r.status_code == 401:
+            return "INVALID"
+
         data = r.json()
 
         if keys == "all":
@@ -86,7 +96,32 @@ def query_spotify(id, type = "artist", keys="all"):
 
             return [data[key] for key in keys]
 
+
 # ROUTES
+
+#Login Route:
+@app.route('/login', methods = ["GET"])
+def login():
+	# Pedido do authorization_code ao servidor de autorização (e dono do recuro a aceder)
+	AUTHORIZATION_URL, state = spotify.authorization_url(AUTHORIZATION_BASE_URL)
+
+	return redirect(AUTHORIZATION_URL)
+
+@app.route('/callback', methods = ["GET"])
+def callback():
+    try:
+
+        r = make_response("Autorizado")
+        TOKEN_URL = 'https://accounts.spotify.com/api/token'
+        URL_RESPONSE = request.url
+        spotify.fetch_token(TOKEN_URL, client_secret=CLIENT_SECRET, authorization_response=URL_RESPONSE)
+
+        print(spotify.access_token)
+
+    except:
+        redirect(url_for('.login'))
+
+    return r
 
 # Utilizadores Route:
 @app.route('/utilizadores', methods = ['POST', 'GET', 'DELETE'])
@@ -275,6 +310,12 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
                 for album in results:
                     spotify_details = query_spotify(album["id_spotify"], type="album")
 
+                    print(spotify_details)
+
+                    # Redirect user to login page if access token is invalid
+                    if spotify_details == "INVALID":
+                        return redirect(url_for('.login'))
+
                     # Merging both dictionaries and appending to results
                     processed_results.append({**album, **spotify_details})
 
@@ -303,7 +344,7 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
                 r = make_response(error_json(404, description))
                 r.status_code = 404
 
-        except:
+        except Exception:
             # Catching all other exceptions
             r = make_response(error_json(*INTERNAL_SERVER_ERROR))
             r.status_code = 500
@@ -333,7 +374,14 @@ def albuns(id_avaliacao = None, id_album = None, id_user = None, id_artista = No
                 id_spotify = data["id_spotify"]
 
                 # Obtaining info about album and its author
-                name, info_spotify_artista = query_spotify(id_spotify, type="album", keys=["name", "artists"])
+
+                spotify_details = query_spotify(id_spotify, type="album", keys=["name", "artists"])
+
+                # Redirect user to login page if access token is invalid
+                if spotify_details == "INVALID":
+                    redirect(url_for('.login'))
+
+                name, info_spotify_artista = spotify_details
 
                 # Selecting the artist's spotify ID
                 id_spotify_artista = info_spotify_artista[0]["id"]
@@ -513,6 +561,10 @@ def artistas(id_artista = None):
 
                 spotify_details = query_spotify(artist["id_spotify"], type="artist")
 
+                # Redirect user to login page
+                if spotify_details == "INVALID":
+                    return redirect(url_for('.login'))
+
                 # Merging both dictionaries (local data and spotify data) and appending to results
                 processed_results.append({**artist, **spotify_details})
 
@@ -676,4 +728,8 @@ def close_connection(exception):
         db.close()
 
 if __name__ == '__main__':
-    app.run(debug = False)
+    context = ssl.SSLContext(protocol=ssl.PROTOCOL_TLS_SERVER)
+    context.verify_mode = ssl.CERT_REQUIRED
+    context.load_verify_locations(cafile=CERT_PATH + 'root.pem')
+    context.load_cert_chain(certfile=CERT_PATH + 'serv.crt',keyfile=CERT_PATH + 'serv.key')
+    app.run('localhost', ssl_context=context, debug = True)
