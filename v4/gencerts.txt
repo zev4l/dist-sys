@@ -1,0 +1,16 @@
+openssl genrsa -out root.key 2048
+
+// TUDO EM BRANCO
+openssl req -x509 -new -nodes -key root.key -sha256 -days 365 -out root.pem
+//
+
+openssl genrsa -out cli.key 2048
+openssl genrsa -out serv.key 2048
+
+// COLOCAR LOCALHOST NO COMMON NAME
+openssl req -new -nodes -key cli.key -sha256 -days 365 -out cli.csr
+openssl req -new -nodes -key serv.key -sha256 -days 365 -out serv.csr
+//
+
+openssl x509 -req -in cli.csr -CA root.pem -CAkey root.key \-CAcreateserial -out cli.crt -days 365 -sha256
+openssl x509 -req -in serv.csr -CA root.pem -CAkey root.key \-CAcreateserial -out serv.crt -days 365 -sha256
