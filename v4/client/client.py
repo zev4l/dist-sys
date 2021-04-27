@@ -12,6 +12,8 @@ import requests
 import os
 import color_utils as cu
 from pprint import pprint
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.SecurityWarning)
 
 ### Variáveis Globais
 
@@ -26,7 +28,7 @@ MISSING_ARGUMENTS_ERROR = "MISSING ARGUMENTS"
 EXCESSIVE_ARGUMENTS_ERROR = "TOO MANY ARGUMENTS"
 INVALID_ARGUMENTS_ERROR = "INVALID ARGUMENTS"
 
-GENERAL_CONNECTION_ERROR = cu.colorWrite("CONNECTION ERROR", 'red')
+GENERAL_CONNECTION_ERROR = cu.colorWrite("CONNECTION ERROR - Make sure that you're logged in and try again.", 'red')
 CONNECTION_REFUSED_ERROR = cu.colorWrite("CONNECTION REFUSED", 'red')
 
 HELP_MESSAGE = f"""{cu.colorWrite('Comandos Disponíveis', 'green')}:
@@ -251,16 +253,16 @@ try:
                   "B": 4,
                   "MB": 5}
 
-    queryUrlReadDelete = {"UTILIZADOR": f"http://{HOST}:{PORT}/utilizadores/",
-                          "ALBUM": f"http://{HOST}:{PORT}/albuns/",
-                          "ARTISTA": f"http://{HOST}:{PORT}/artistas/"}
+    queryUrlReadDelete = {"UTILIZADOR": f"https://{HOST}:{PORT}/utilizadores/",
+                          "ALBUM": f"https://{HOST}:{PORT}/albuns/",
+                          "ARTISTA": f"https://{HOST}:{PORT}/artistas/"}
 
-    queryUrlReadDeleteAll = {"UTILIZADORES": f"http://{HOST}:{PORT}/utilizadores",
-                             "ALBUNS": f"http://{HOST}:{PORT}/albuns",
-                             "ARTISTAS": f"http://{HOST}:{PORT}/artistas",
-                             "ALBUNS_A": f"http://{HOST}:{PORT}/albuns/artistas/",
-                             "ALBUNS_U": f"http://{HOST}:{PORT}/albuns/utilizadores/",
-                             "AVALIACOES": f"http://{HOST}:{PORT}/albuns/avaliacoes"}
+    queryUrlReadDeleteAll = {"UTILIZADORES": f"https://{HOST}:{PORT}/utilizadores",
+                             "ALBUNS": f"https://{HOST}:{PORT}/albuns",
+                             "ARTISTAS": f"https://{HOST}:{PORT}/artistas",
+                             "ALBUNS_A": f"https://{HOST}:{PORT}/albuns/artistas/",
+                             "ALBUNS_U": f"https://{HOST}:{PORT}/albuns/utilizadores/",
+                             "AVALIACOES": f"https://{HOST}:{PORT}/albuns/avaliacoes"}
 
     while not halt:
         try:
@@ -312,18 +314,18 @@ try:
                             utilizador = {"nome": arguments[1],
                                           "senha": arguments[2]}
                             # efetuar request
-                            r = requests.post(f"http://{HOST}:{PORT}/utilizadores", json=utilizador, verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                            r = requests.post(f"https://{HOST}:{PORT}/utilizadores", json=utilizador, verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
                             print(r.status_code)
                             print("***")
                         elif option == "ARTISTA" or option == "ALBUM":
                             query = {"id_spotify": arguments[1]}
                             # efetuar request
                             if option == "ARTISTA":
-                                r = requests.post(f"http://{HOST}:{PORT}/artistas", json=query, verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                                r = requests.post(f"https://{HOST}:{PORT}/artistas", json=query, verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
                                 print(r.status_code)
                                 print("***")
                             else:
-                                r = requests.post(f"http://{HOST}:{PORT}/albuns", json=query, verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                                r = requests.post(f"https://{HOST}:{PORT}/albuns", json=query, verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
                                 print(r.status_code)
                                 print("***")
 
@@ -331,7 +333,7 @@ try:
                             avaliacao = {"id_user": int(arguments[0]),
                                          "id_album": int(arguments[1]),
                                          "id_avaliacao": avaliacoes.get(arguments[2])}
-                            r = requests.post(f"http://{HOST}:{PORT}/albuns/avaliacoes", verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'), json=avaliacao)
+                            r = requests.post(f"https://{HOST}:{PORT}/albuns/avaliacoes", verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'), json=avaliacao)
                             print(r.status_code)
                             print("***")
                             # efetuar request
@@ -359,7 +361,7 @@ try:
                                     pprint(r.json())
                                     print("***")
                                 else:
-                                    r = requests.delete(queryUrlReadDeleteAll.get(sub_option), verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                                    r = requests.delete(queryUrlReadDeleteAll.get(sub_option), verify=CERT_PATH ,cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
                                     print(r.status_code)
                                     print("***")
                             elif sub_option == "ALBUNS":
@@ -403,7 +405,7 @@ try:
                                          "id_avaliacao": avaliacoes.get(arguments[2]),
                                          "id_user": int(arguments[3])}
                             # efetuar request
-                            r = requests.put(f"http://{HOST}:{PORT}/albuns/avaliacoes", json=avaliacao, verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                            r = requests.put(f"https://{HOST}:{PORT}/albuns/avaliacoes", json=avaliacao, verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
                             print(r.status_code)
                             print("***")
 
@@ -411,7 +413,7 @@ try:
                             id_user = int(arguments[1])
                             utilizador = {"senha": arguments[2]}
                             # efetuar request
-                            r = requests.put(f"http://{HOST}:{PORT}/utilizadores/{id_user}", json=utilizador, verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                            r = requests.put(f"https://{HOST}:{PORT}/utilizadores/{id_user}", json=utilizador, verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
                             print(r.status_code)
                             print("***")
 
@@ -433,4 +435,4 @@ except ConnectionRefusedError:
 except Exception as e:
     # Emitir erro geral de conexão caso hajam quaisqueres complicações no processo
     # de envio do pedido ao servidor e receção da resposta.
-    print(e)
+    print(GENERAL_CONNECTION_ERROR)
