@@ -17,7 +17,8 @@ urllib3.disable_warnings(urllib3.exceptions.SecurityWarning)
 
 ### Variáveis Globais
 
-CERT_PATH = "/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/"
+CERT_PATH = "/mnt/d/_/Projects/FCUL/AD/dist-sys/v4/certs/"
+AUTH_ARGUMENTS = {"verify":CERT_PATH + 'root.pem', "cert":(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key')}
 
 # Mensagens de Erro
 
@@ -33,41 +34,38 @@ CONNECTION_REFUSED_ERROR = cu.colorWrite("CONNECTION REFUSED", 'red')
 
 HELP_MESSAGE = f"""{cu.colorWrite('Comandos Disponíveis', 'green')}:
   {cu.colorWrite('Servidor', 'blue')}:
-    -CREATE
-        -UTILIZADOR <nome> <senha>
-        -ALBUM <id_spotify>
-        -ARTISTA <id_spotify>
-        -<id_user> <id_album> <avaliacao>
-    -READ
-        -UTILIZADOR <id_user>
-        -ALBUM <id_album>
-        -ARTISTA <id_artista>
-        -ALBUM <id_album>
-        -ALL <UTILIZADORES | ARTISTAS | ALBUNS>
-        -ALL ALBUNS_A <id_artista>
-        -ALL ALBUNS_U <id_user>
-        -ALL ALBUNS <avaliacao>
-    -DELETE
-        -UTILIZADOR <id_user>
-        -ALBUM <id_album>
-        -ARTISTA <id_artista>
-        -ALBUM <id_album>
-        -ALL <UTILIZADORES | ARTISTAS | ALBUNS>
-        -ALL ALBUNS_A <id_artista>
-        -ALL ALBUNS_U <id_user>
-        -ALL ALBUNS <avaliacao>
-    -UPDATE
-        -UTILIZADOR <id_user> <senha>
-        -ALBUM <id_album> <avaliacao> <id_user>
+    - CREATE
+        - UTILIZADOR <nome> <senha>
+        - ALBUM <id_spotify>
+        - ARTISTA <id_spotify>
+        - <id_user> <id_album> <avaliacao>
+    - READ
+        - UTILIZADOR <id_user>
+        - ALBUM <id_album>
+        - ARTISTA <id_artista>
+        - ALBUM <id_album>
+        - ALL <UTILIZADORES | ARTISTAS | ALBUNS>
+        - ALL ALBUNS_A <id_artista>
+        - ALL ALBUNS_U <id_user>
+        - ALL ALBUNS <avaliacao>
+    - DELETE
+        - UTILIZADOR <id_user>
+        - ALBUM <id_album>
+        - ARTISTA <id_artista>
+        - ALBUM <id_album>
+        - ALL <UTILIZADORES | ARTISTAS | ALBUNS>
+        - ALL ALBUNS_A <id_artista>
+        - ALL ALBUNS_U <id_user>
+        - ALL ALBUNS <avaliacao>
+    - UPDATE
+        - UTILIZADOR <id_user> <senha>
+        - ALBUM <id_album> <avaliacao> <id_user>
 
   {cu.colorWrite('Cliente', 'blue')}:
-    -CLEAR
-    -HELP
-    -EXIT"""
+    - CLEAR
+    - HELP
+    - EXIT"""
 
-
-def authRequestArguments():
-    return {"verify":CERT_PATH + 'root.pem', "cert":(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key')}}
 
 
 def argumentChecker(userInput):
@@ -318,18 +316,18 @@ try:
                             utilizador = {"nome": arguments[1],
                                           "senha": arguments[2]}
                             # efetuar request
-                            r = requests.post(f"https://{HOST}:{PORT}/utilizadores", json=utilizador, **authRequestArguments())
+                            r = requests.post(f"https://{HOST}:{PORT}/utilizadores", json=utilizador, **AUTH_ARGUMENTS)
                             print(r.status_code)
                             print("***")
                         elif option == "ARTISTA" or option == "ALBUM":
                             query = {"id_spotify": arguments[1]}
                             # efetuar request
                             if option == "ARTISTA":
-                                r = requests.post(f"https://{HOST}:{PORT}/artistas", json=query, **authRequestArguments())
+                                r = requests.post(f"https://{HOST}:{PORT}/artistas", json=query, **AUTH_ARGUMENTS)
                                 print(r.status_code)
                                 print("***")
                             else:
-                                r = requests.post(f"https://{HOST}:{PORT}/albuns", json=query, **authRequestArguments())
+                                r = requests.post(f"https://{HOST}:{PORT}/albuns", json=query, **AUTH_ARGUMENTS)
                                 print(r.status_code)
                                 print("***")
 
@@ -337,7 +335,7 @@ try:
                             avaliacao = {"id_user": int(arguments[0]),
                                          "id_album": int(arguments[1]),
                                          "id_avaliacao": avaliacoes.get(arguments[2])}
-                            r = requests.post(f"https://{HOST}:{PORT}/albuns/avaliacoes", **authRequestArguments(), json=avaliacao)
+                            r = requests.post(f"https://{HOST}:{PORT}/albuns/avaliacoes", **AUTH_ARGUMENTS, json=avaliacao)
                             print(r.status_code)
                             print("***")
                             # efetuar request
@@ -348,57 +346,57 @@ try:
                             id = arguments[1]
                             # efetuar request
                             if command == "READ":
-                                r = requests.get(queryUrlReadDelete.get(option) + id, **authRequestArguments())
+                                r = requests.get(queryUrlReadDelete.get(option) + id, **AUTH_ARGUMENTS)
                                 print(r.status_code)
                                 pprint(r.json())
                                 print("***")
                             else:
-                                r = requests.delete(queryUrlReadDelete.get(option) + id, **authRequestArguments())
+                                r = requests.delete(queryUrlReadDelete.get(option) + id, **AUTH_ARGUMENTS)
                                 print(r.status_code)
                                 print("***")
                         else:
                             sub_option = arguments[1]
                             if sub_option in ("UTILIZADORES", "ARTISTAS", "AVALIACOES"):
                                 if command == "READ":
-                                    r = requests.get(queryUrlReadDeleteAll.get(sub_option), **authRequestArguments())
+                                    r = requests.get(queryUrlReadDeleteAll.get(sub_option), **AUTH_ARGUMENTS)
                                     print(r.status_code)
                                     pprint(r.json())
                                     print("***")
                                 else:
-                                    r = requests.delete(queryUrlReadDeleteAll.get(sub_option), verify=CERT_PATH ,cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                                    r = requests.delete(queryUrlReadDeleteAll.get(sub_option), **AUTH_ARGUMENTS)
                                     print(r.status_code)
                                     print("***")
                             elif sub_option == "ALBUNS":
                                 if len(arguments) == 3:
                                     avaliacao = avaliacoes.get(arguments[2])
                                     if command == "READ":
-                                        r = requests.get(queryUrlReadDeleteAll.get(sub_option) + f"/avaliacoes/{avaliacao}", **authRequestArguments())
+                                        r = requests.get(queryUrlReadDeleteAll.get(sub_option) + f"/avaliacoes/{avaliacao}", **AUTH_ARGUMENTS)
                                         print(r.status_code)
                                         pprint(r.json())
                                         print("***")
                                     else:
-                                        r = requests.delete(queryUrlReadDeleteAll.get(sub_option) + f"/avaliacoes/{avaliacao}", **authRequestArguments())
+                                        r = requests.delete(queryUrlReadDeleteAll.get(sub_option) + f"/avaliacoes/{avaliacao}", **AUTH_ARGUMENTS)
                                         print(r.status_code)
                                         print("***")
                                 else:
                                     if command == "READ":
-                                        r = requests.get(queryUrlReadDeleteAll.get(sub_option), **authRequestArguments())
+                                        r = requests.get(queryUrlReadDeleteAll.get(sub_option), **AUTH_ARGUMENTS)
                                         print(r.status_code)
                                         pprint(r.json())
                                         print("***")
                                     else:
-                                        r = requests.delete(queryUrlReadDeleteAll.get(sub_option), **authRequestArguments())
+                                        r = requests.delete(queryUrlReadDeleteAll.get(sub_option), **AUTH_ARGUMENTS)
                                         print(r.status_code)
                                         print("***")
                             else:
                                 id = arguments[2]
                                 if command == "READ":
-                                    r = requests.get(queryUrlReadDeleteAll.get(sub_option) + id, **authRequestArguments())
+                                    r = requests.get(queryUrlReadDeleteAll.get(sub_option) + id, **AUTH_ARGUMENTS)
                                     print(r.status_code)
                                     pprint(r.json())
                                     print("***")
                                 else:
-                                    r = requests.delete(queryUrlReadDeleteAll.get(sub_option) + id, **authRequestArguments())
+                                    r = requests.delete(queryUrlReadDeleteAll.get(sub_option) + id, **AUTH_ARGUMENTS)
                                     print(r.status_code)
                                     print("***")
                                 # efetuar request
@@ -409,7 +407,7 @@ try:
                                          "id_avaliacao": avaliacoes.get(arguments[2]),
                                          "id_user": int(arguments[3])}
                             # efetuar request
-                            r = requests.put(f"https://{HOST}:{PORT}/albuns/avaliacoes", json=avaliacao, **authRequestArguments())
+                            r = requests.put(f"https://{HOST}:{PORT}/albuns/avaliacoes", json=avaliacao, **AUTH_ARGUMENTS)
                             print(r.status_code)
                             print("***")
 
@@ -417,7 +415,7 @@ try:
                             id_user = int(arguments[1])
                             utilizador = {"senha": arguments[2]}
                             # efetuar request
-                            r = requests.put(f"https://{HOST}:{PORT}/utilizadores/{id_user}", json=utilizador, **authRequestArguments())
+                            r = requests.put(f"https://{HOST}:{PORT}/utilizadores/{id_user}", json=utilizador, **AUTH_ARGUMENTS)
                             print(r.status_code)
                             print("***")
 
