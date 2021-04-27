@@ -15,6 +15,8 @@ from pprint import pprint
 
 ### Variáveis Globais
 
+CERT_PATH = "/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/"
+
 # Mensagens de Erro
 
 serverCommands = ("CREATE", "READ", "DELETE", "UPDATE")
@@ -310,18 +312,18 @@ try:
                             utilizador = {"nome": arguments[1],
                                           "senha": arguments[2]}
                             # efetuar request
-                            r = requests.post(f"http://{HOST}:{PORT}/utilizadores", json=utilizador)
+                            r = requests.post(f"http://{HOST}:{PORT}/utilizadores", json=utilizador, verify='/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/root.pem',cert=('/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.crt','/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.key'))
                             print(r.status_code)
                             print("***")
                         elif option == "ARTISTA" or option == "ALBUM":
                             query = {"id_spotify": arguments[1]}
                             # efetuar request
                             if option == "ARTISTA":
-                                r = requests.post(f"http://{HOST}:{PORT}/artistas", json=query)
+                                r = requests.post(f"http://{HOST}:{PORT}/artistas", json=query, verify='/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/root.pem',cert=('/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.crt','/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.key'))
                                 print(r.status_code)
                                 print("***")
                             else:
-                                r = requests.post(f"http://{HOST}:{PORT}/albuns", json=query)
+                                r = requests.post(f"http://{HOST}:{PORT}/albuns", json=query, verify='/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/root.pem',cert=('/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.crt','/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.key'))
                                 print(r.status_code)
                                 print("***")
 
@@ -329,7 +331,7 @@ try:
                             avaliacao = {"id_user": int(arguments[0]),
                                          "id_album": int(arguments[1]),
                                          "id_avaliacao": avaliacoes.get(arguments[2])}
-                            r = requests.post(f"http://{HOST}:{PORT}/albuns/avaliacoes", json=avaliacao)
+                            r = requests.post(f"http://{HOST}:{PORT}/albuns/avaliacoes", verify='/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/root.pem',cert=('/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.crt','/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.key'), json=avaliacao)
                             print(r.status_code)
                             print("***")
                             # efetuar request
@@ -340,57 +342,57 @@ try:
                             id = arguments[1]
                             # efetuar request
                             if command == "READ":
-                                r = requests.get(queryUrlReadDelete.get(option) + id)
+                                r = requests.get(queryUrlReadDelete.get(option) + id, verify='/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/root.pem',cert=('/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.crt','/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.key'))
                                 print(r.status_code)
                                 pprint(r.json())
                                 print("***")
                             else:
-                                r = requests.delete(queryUrlReadDelete.get(option) + id)
+                                r = requests.delete(queryUrlReadDelete.get(option) + id, verify='/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/root.pem',cert=('/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.crt','/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.key'))
                                 print(r.status_code)
                                 print("***")
                         else:
                             sub_option = arguments[1]
                             if sub_option in ("UTILIZADORES", "ARTISTAS", "AVALIACOES"):
                                 if command == "READ":
-                                    r = requests.get(queryUrlReadDeleteAll.get(sub_option))
+                                    r = requests.get(queryUrlReadDeleteAll.get(sub_option), verify='/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/root.pem',cert=('/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.crt','/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.key'))
                                     print(r.status_code)
                                     pprint(r.json())
                                     print("***")
                                 else:
-                                    r = requests.delete(queryUrlReadDeleteAll.get(sub_option))
+                                    r = requests.delete(queryUrlReadDeleteAll.get(sub_option), verify='/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/root.pem',cert=('/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.crt','/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.key'))
                                     print(r.status_code)
                                     print("***")
                             elif sub_option == "ALBUNS":
                                 if len(arguments) == 3:
                                     avaliacao = avaliacoes.get(arguments[2])
                                     if command == "READ":
-                                        r = requests.get(queryUrlReadDeleteAll.get(sub_option) + f"/avaliacoes/{avaliacao}")
+                                        r = requests.get(queryUrlReadDeleteAll.get(sub_option) + f"/avaliacoes/{avaliacao}", verify='/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/root.pem',cert=('/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.crt','/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.key'))
                                         print(r.status_code)
                                         pprint(r.json())
                                         print("***")
                                     else:
-                                        r = requests.delete(queryUrlReadDeleteAll.get(sub_option) + f"/avaliacoes/{avaliacao}")
+                                        r = requests.delete(queryUrlReadDeleteAll.get(sub_option) + f"/avaliacoes/{avaliacao}", verify='/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/root.pem',cert=('/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.crt','/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.key'))
                                         print(r.status_code)
                                         print("***")
                                 else:
                                     if command == "READ":
-                                        r = requests.get(queryUrlReadDeleteAll.get(sub_option))
+                                        r = requests.get(queryUrlReadDeleteAll.get(sub_option), verify='/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/root.pem',cert=('/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.crt','/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.key'))
                                         print(r.status_code)
                                         pprint(r.json())
                                         print("***")
                                     else:
-                                        r = requests.delete(queryUrlReadDeleteAll.get(sub_option))
+                                        r = requests.delete(queryUrlReadDeleteAll.get(sub_option), verify='/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/root.pem',cert=('/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.crt','/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.key'))
                                         print(r.status_code)
                                         print("***")
                             else:
                                 id = arguments[2]
                                 if command == "READ":
-                                    r = requests.get(queryUrlReadDeleteAll.get(sub_option) + id)
+                                    r = requests.get(queryUrlReadDeleteAll.get(sub_option) + id, verify='/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/root.pem',cert=('/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.crt','/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.key'))
                                     print(r.status_code)
                                     pprint(r.json())
                                     print("***")
                                 else:
-                                    r = requests.delete(queryUrlReadDeleteAll.get(sub_option) + id)
+                                    r = requests.delete(queryUrlReadDeleteAll.get(sub_option) + id, verify='/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/root.pem',cert=('/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.crt','/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.key'))
                                     print(r.status_code)
                                     print("***")
                                 # efetuar request
@@ -401,7 +403,7 @@ try:
                                          "id_avaliacao": avaliacoes.get(arguments[2]),
                                          "id_user": int(arguments[3])}
                             # efetuar request
-                            r = requests.put(f"http://{HOST}:{PORT}/albuns/avaliacoes", json=avaliacao)
+                            r = requests.put(f"http://{HOST}:{PORT}/albuns/avaliacoes", json=avaliacao, verify='/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/root.pem',cert=('/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.crt','/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.key'))
                             print(r.status_code)
                             print("***")
 
@@ -409,7 +411,7 @@ try:
                             id_user = int(arguments[1])
                             utilizador = {"senha": arguments[2]}
                             # efetuar request
-                            r = requests.put(f"http://{HOST}:{PORT}/utilizadores/{id_user}", json=utilizador)
+                            r = requests.put(f"http://{HOST}:{PORT}/utilizadores/{id_user}", json=utilizador, verify='/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/root.pem',cert=('/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.crt','/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/cli.key'))
                             print(r.status_code)
                             print("***")
 

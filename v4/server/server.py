@@ -13,7 +13,7 @@ from flask import Flask, g, request, make_response, jsonify, redirect, url_for
 from requests_oauthlib import OAuth2Session
 
 # Cert path
-CERT_PATH = "/mnt/d/_/Projects/FCUL/AD/dist-sys/v4/certs/"
+CERT_PATH = "/mnt/d/BackupFCUL/Ano2/Aplicacoes_Distribuidas/dist-sys/v4/certs/"
 
 # OAuth2 related constants
 CLIENT_ID = "a040271774db4f40b192f953a0872d84"
