@@ -66,6 +66,10 @@ HELP_MESSAGE = f"""{cu.colorWrite('Comandos Disponíveis', 'green')}:
     -EXIT"""
 
 
+def authRequestArguments():
+    return {"verify":CERT_PATH + 'root.pem', "cert":(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key')}}
+
+
 def argumentChecker(userInput):
     """
     Verifica a integridade e validade dos argumentos relativos aos comandos
@@ -314,18 +318,18 @@ try:
                             utilizador = {"nome": arguments[1],
                                           "senha": arguments[2]}
                             # efetuar request
-                            r = requests.post(f"https://{HOST}:{PORT}/utilizadores", json=utilizador, verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                            r = requests.post(f"https://{HOST}:{PORT}/utilizadores", json=utilizador, **authRequestArguments())
                             print(r.status_code)
                             print("***")
                         elif option == "ARTISTA" or option == "ALBUM":
                             query = {"id_spotify": arguments[1]}
                             # efetuar request
                             if option == "ARTISTA":
-                                r = requests.post(f"https://{HOST}:{PORT}/artistas", json=query, verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                                r = requests.post(f"https://{HOST}:{PORT}/artistas", json=query, **authRequestArguments())
                                 print(r.status_code)
                                 print("***")
                             else:
-                                r = requests.post(f"https://{HOST}:{PORT}/albuns", json=query, verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                                r = requests.post(f"https://{HOST}:{PORT}/albuns", json=query, **authRequestArguments())
                                 print(r.status_code)
                                 print("***")
 
@@ -333,7 +337,7 @@ try:
                             avaliacao = {"id_user": int(arguments[0]),
                                          "id_album": int(arguments[1]),
                                          "id_avaliacao": avaliacoes.get(arguments[2])}
-                            r = requests.post(f"https://{HOST}:{PORT}/albuns/avaliacoes", verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'), json=avaliacao)
+                            r = requests.post(f"https://{HOST}:{PORT}/albuns/avaliacoes", **authRequestArguments(), json=avaliacao)
                             print(r.status_code)
                             print("***")
                             # efetuar request
@@ -344,19 +348,19 @@ try:
                             id = arguments[1]
                             # efetuar request
                             if command == "READ":
-                                r = requests.get(queryUrlReadDelete.get(option) + id, verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                                r = requests.get(queryUrlReadDelete.get(option) + id, **authRequestArguments())
                                 print(r.status_code)
                                 pprint(r.json())
                                 print("***")
                             else:
-                                r = requests.delete(queryUrlReadDelete.get(option) + id, verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                                r = requests.delete(queryUrlReadDelete.get(option) + id, **authRequestArguments())
                                 print(r.status_code)
                                 print("***")
                         else:
                             sub_option = arguments[1]
                             if sub_option in ("UTILIZADORES", "ARTISTAS", "AVALIACOES"):
                                 if command == "READ":
-                                    r = requests.get(queryUrlReadDeleteAll.get(sub_option), verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                                    r = requests.get(queryUrlReadDeleteAll.get(sub_option), **authRequestArguments())
                                     print(r.status_code)
                                     pprint(r.json())
                                     print("***")
@@ -368,33 +372,33 @@ try:
                                 if len(arguments) == 3:
                                     avaliacao = avaliacoes.get(arguments[2])
                                     if command == "READ":
-                                        r = requests.get(queryUrlReadDeleteAll.get(sub_option) + f"/avaliacoes/{avaliacao}", verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                                        r = requests.get(queryUrlReadDeleteAll.get(sub_option) + f"/avaliacoes/{avaliacao}", **authRequestArguments())
                                         print(r.status_code)
                                         pprint(r.json())
                                         print("***")
                                     else:
-                                        r = requests.delete(queryUrlReadDeleteAll.get(sub_option) + f"/avaliacoes/{avaliacao}", verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                                        r = requests.delete(queryUrlReadDeleteAll.get(sub_option) + f"/avaliacoes/{avaliacao}", **authRequestArguments())
                                         print(r.status_code)
                                         print("***")
                                 else:
                                     if command == "READ":
-                                        r = requests.get(queryUrlReadDeleteAll.get(sub_option), verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                                        r = requests.get(queryUrlReadDeleteAll.get(sub_option), **authRequestArguments())
                                         print(r.status_code)
                                         pprint(r.json())
                                         print("***")
                                     else:
-                                        r = requests.delete(queryUrlReadDeleteAll.get(sub_option), verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                                        r = requests.delete(queryUrlReadDeleteAll.get(sub_option), **authRequestArguments())
                                         print(r.status_code)
                                         print("***")
                             else:
                                 id = arguments[2]
                                 if command == "READ":
-                                    r = requests.get(queryUrlReadDeleteAll.get(sub_option) + id, verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                                    r = requests.get(queryUrlReadDeleteAll.get(sub_option) + id, **authRequestArguments())
                                     print(r.status_code)
                                     pprint(r.json())
                                     print("***")
                                 else:
-                                    r = requests.delete(queryUrlReadDeleteAll.get(sub_option) + id, verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                                    r = requests.delete(queryUrlReadDeleteAll.get(sub_option) + id, **authRequestArguments())
                                     print(r.status_code)
                                     print("***")
                                 # efetuar request
@@ -405,7 +409,7 @@ try:
                                          "id_avaliacao": avaliacoes.get(arguments[2]),
                                          "id_user": int(arguments[3])}
                             # efetuar request
-                            r = requests.put(f"https://{HOST}:{PORT}/albuns/avaliacoes", json=avaliacao, verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                            r = requests.put(f"https://{HOST}:{PORT}/albuns/avaliacoes", json=avaliacao, **authRequestArguments())
                             print(r.status_code)
                             print("***")
 
@@ -413,7 +417,7 @@ try:
                             id_user = int(arguments[1])
                             utilizador = {"senha": arguments[2]}
                             # efetuar request
-                            r = requests.put(f"https://{HOST}:{PORT}/utilizadores/{id_user}", json=utilizador, verify=CERT_PATH + 'root.pem',cert=(CERT_PATH + 'cli.crt',CERT_PATH + 'cli.key'))
+                            r = requests.put(f"https://{HOST}:{PORT}/utilizadores/{id_user}", json=utilizador, **authRequestArguments())
                             print(r.status_code)
                             print("***")
 
