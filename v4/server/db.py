@@ -1,7 +1,7 @@
 """
-Aplicações distribuídas - Projeto 3 - db.py
+Aplicações distribuídas - Projeto 4 - db.py
 Grupo: 77
-Números de aluno: 55373, 55371
+Alunos: José Almeida - 55373, Augusto Gouveia - 55371
 """
 
 import sqlite3

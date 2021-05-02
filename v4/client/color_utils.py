@@ -1,7 +1,7 @@
 """
-Aplicações distribuídas - Projeto 3 - color_utils.py
+Aplicações distribuídas - Projeto 4 - color_utils.py
 Grupo: 77
-Números de aluno: 55373, 55371
+Alunos: José Almeida - 55373, Augusto Gouveia - 55371
 """
 
 import re
