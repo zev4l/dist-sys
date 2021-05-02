@@ -10,6 +10,9 @@ Funcionalidades:
 
 • Utilização: server
 
+• Serviço Web com um API REST para gerir um sistema simplificado de classificação de álbuns de música de utilizadores,
+  com a capacidade de interrogar o API REST do Spotify sobre mais informações em relação a um álbum/artista em particular.
+
 • Verificação de autenticidade do cliente fazendo uso do protocolo SSL/TLS garantindo comunicação confidencial (cifrada).
 
 • Utilização do protocolo OAuth2 (integradamente com o Flask) para obtenção da autorização requerida pelo REST API do Spotify.
@@ -23,7 +26,9 @@ Funcionalidades:
 
 • Utilização: client [-c] [IP/Hostname] [Port]
 
-• Verificação de autenticidade do servidor fazendo uso do protocolo SSL/TLS garantindo comunicação confidencial (cifrada).
+• Funcionamento: Para utilizar qualquer comando de acesso ao servidor, é necessário estar autenticado no Spotify.
+  Na primeira utilização, deve obter o token através do login em https://localhost:5000/login . O token é obtido e guardado localmente.
+  De seguida, pode utilizar qualquer comando de acesso ao servidor (HELP para obter a lista de comandos disponíveis).
 
 • Extra modo adicionado:
 	- Colorless (-c), cujo desativa a funcionalidade das cores.
@@ -31,6 +36,8 @@ Funcionalidades:
 • Extra comandos adicionados:
 	- HELP, cujo apresenta os comandos disponíveis e a sua respetiva sintaxe
 	- CLEAR, cujo limpa o histórico de comandos
+
+• Verificação de autenticidade do servidor fazendo uso do protocolo SSL/TLS garantindo comunicação confidencial (cifrada).
 
 • Comunicação com o servidor através do módulo requests (com devida autenticação).
 
